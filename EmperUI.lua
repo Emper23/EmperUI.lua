@@ -230,6 +230,7 @@ function EmperUI:CreateWindow(options)
     options = options or {}
     local WindowTitle = options.Title or "PREMIUM HUB"
     local WindowSize = options.Size or UDim2.new(0, 680, 0, 450)
+    local WindowObj = { Tabs = {}, ConfigElements = {} }
     
     local Theme = {
         Background = Color3.fromRGB(15, 15, 20),
@@ -519,11 +520,7 @@ function EmperUI:CreateWindow(options)
         end
     end)
 
-    local WindowObj = { 
-        Tabs = {}, 
-        ConfigElements = {},
-        ToggleKey = options.ToggleKey or Enum.KeyCode.RightControl 
-    }
+    WindowObj.ToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == WindowObj.ToggleKey then
@@ -769,11 +766,23 @@ function EmperUI:CreateWindow(options)
             local Section = {}
 
             -- [ Create Button ]
-            function Section:CreateButton(btnText, callback)
+            function Section:CreateButton(arg1, arg2)
+                local btnText, descText, callback
+                if type(arg1) == "table" then
+                    btnText = arg1.Title or arg1.Name or "Button"
+                    descText = arg1.Desc or arg1.Description
+                    callback = arg1.Callback
+                else
+                    btnText = arg1
+                    callback = arg2
+                end
+                
+                local baseHeight = descText and 56 or 42
+                
                 local BtnFrame = Instance.new("Frame")
                 BtnFrame.Parent = ParentCol
                 BtnFrame.BackgroundColor3 = Theme.ElementBg
-                BtnFrame.Size = UDim2.new(1, 0, 0, 42)
+                BtnFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 BtnFrame.BorderSizePixel = 0
 
                 local BtnCorner = Instance.new("UICorner")
@@ -788,12 +797,27 @@ function EmperUI:CreateWindow(options)
                 local Btn = Instance.new("TextButton")
                 Btn.Parent = BtnFrame
                 Btn.BackgroundTransparency = 1
-                Btn.Size = UDim2.new(1, 0, 1, 0)
+                Btn.Size = descText and UDim2.new(1, 0, 0, 24) or UDim2.new(1, 0, 1, 0)
+                Btn.Position = descText and UDim2.new(0, 0, 0, 8) or UDim2.new(0, 0, 0, 0)
                 Btn.Font = Enum.Font.GothamMedium
                 Btn.Text = "    " .. btnText
                 Btn.TextColor3 = Theme.Text
                 Btn.TextSize = 13
                 Btn.TextXAlignment = Enum.TextXAlignment.Left
+                
+                if descText then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Parent = BtnFrame
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Size = UDim2.new(1, -30, 0, 14)
+                    DescLabel.Position = UDim2.new(0, 16, 0, 30)
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.Text = descText
+                    DescLabel.TextColor3 = Theme.TextMuted
+                    DescLabel.TextSize = 11
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                end
 
                 local ClickIcon = Instance.new("ImageLabel")
                 ClickIcon.Parent = BtnFrame
@@ -841,13 +865,26 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Toggle ]
-            function Section:CreateToggle(toggleText, defaultState, callback)
+            function Section:CreateToggle(arg1, arg2, arg3)
+                local toggleText, descText, defaultState, callback
+                if type(arg1) == "table" then
+                    toggleText = arg1.Title or arg1.Name or "Toggle"
+                    descText = arg1.Desc or arg1.Description
+                    defaultState = arg1.Value or arg1.Default or false
+                    callback = arg1.Callback
+                else
+                    toggleText = arg1
+                    defaultState = arg2
+                    callback = arg3
+                end
+                
                 local Toggled = defaultState or false
+                local baseHeight = descText and 56 or 42
                 
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Parent = ParentCol
                 ToggleFrame.BackgroundColor3 = Theme.ElementBg
-                ToggleFrame.Size = UDim2.new(1, 0, 0, 42)
+                ToggleFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 ToggleFrame.BorderSizePixel = 0
 
                 local TgCorner = Instance.new("UICorner")
@@ -862,13 +899,27 @@ function EmperUI:CreateWindow(options)
                 local Label = Instance.new("TextLabel")
                 Label.Parent = ToggleFrame
                 Label.BackgroundTransparency = 1
-                Label.Size = UDim2.new(1, -60, 1, 0)
-                Label.Position = UDim2.new(0, 16, 0, 0)
+                Label.Size = descText and UDim2.new(1, -60, 0, 24) or UDim2.new(1, -60, 1, 0)
+                Label.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = toggleText
                 Label.TextColor3 = Theme.Text
                 Label.TextSize = 13
                 Label.TextXAlignment = Enum.TextXAlignment.Left
+                
+                if descText then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Parent = ToggleFrame
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Size = UDim2.new(1, -60, 0, 14)
+                    DescLabel.Position = UDim2.new(0, 16, 0, 30)
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.Text = descText
+                    DescLabel.TextColor3 = Theme.TextMuted
+                    DescLabel.TextSize = 11
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                end
 
                 local SwitchBg = Instance.new("Frame")
                 SwitchBg.Parent = ToggleFrame
@@ -949,13 +1000,34 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Slider ]
-            function Section:CreateSlider(sliderText, min, max, defaultValue, callback)
-                local Value = defaultValue or min
+            function Section:CreateSlider(arg1, arg2, arg3, arg4, arg5)
+                local sliderText, min, max, default, callback
+                if type(arg1) == "table" then
+                    sliderText = arg1.Title or arg1.Name or "Slider"
+                    min = arg1.Min or 0
+                    max = arg1.Max or 100
+                    default = arg1.Value or arg1.Default or min
+                    callback = arg1.Callback
+                else
+                    sliderText = arg1
+                    min = arg2
+                    max = arg3
+                    default = arg4
+                    callback = arg5
+                end
+                
+                local descText
+                if type(arg1) == "table" then
+                    descText = arg1.Desc or arg1.Description
+                end
+                
+                local Value = default or min
+                local baseHeight = descText and 66 or 52
                 
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Parent = ParentCol
                 SliderFrame.BackgroundColor3 = Theme.ElementBg
-                SliderFrame.Size = UDim2.new(1, 0, 0, 52)
+                SliderFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 SliderFrame.BorderSizePixel = 0
 
                 local SlCorner = Instance.new("UICorner")
@@ -992,9 +1064,23 @@ function EmperUI:CreateWindow(options)
                 local Track = Instance.new("TextButton")
                 Track.Parent = SliderFrame
                 Track.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
-                Track.Position = UDim2.new(0, 16, 0, 32)
+                Track.Position = descText and UDim2.new(0, 16, 0, 46) or UDim2.new(0, 16, 0, 32)
                 Track.Size = UDim2.new(1, -32, 0, 6)
                 Track.BorderSizePixel = 0
+                
+                if descText then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Parent = SliderFrame
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Size = UDim2.new(1, -100, 0, 14)
+                    DescLabel.Position = UDim2.new(0, 16, 0, 22)
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.Text = descText
+                    DescLabel.TextColor3 = Theme.TextMuted
+                    DescLabel.TextSize = 11
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                end
                 Track.Text = ""
                 Track.AutoButtonColor = false
 
@@ -1101,15 +1187,35 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Dropdown ]
-            function Section:CreateDropdown(dropdownText, options, defaultOption, callback)
+            function Section:CreateDropdown(arg1, arg2, arg3, arg4)
+                local dropdownText, options, defaultOption, callback
+                if type(arg1) == "table" then
+                    dropdownText = arg1.Title or arg1.Name or "Dropdown"
+                    options = arg1.Values or arg1.Options or {}
+                    defaultOption = arg1.Value or arg1.Default
+                    callback = arg1.Callback
+                else
+                    dropdownText = arg1
+                    options = arg2
+                    defaultOption = arg3
+                    callback = arg4
+                end
+                
+                local descText
+                if type(arg1) == "table" then
+                    descText = arg1.Desc or arg1.Description
+                end
+                
                 options = options or {}
                 local CurrentOption = defaultOption or options[1] or ""
                 local Expanded = false
                 
+                local baseHeight = descText and 56 or 42
+                
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
                 DropdownFrame.BackgroundColor3 = Theme.ElementBg
-                DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
+                DropdownFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
 
@@ -1139,22 +1245,24 @@ function EmperUI:CreateWindow(options)
                 Label.TextColor3 = Theme.Text
                 Label.TextSize = 13
                 Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.TextTruncate = Enum.TextTruncate.AtEnd
 
                 local SelLabel = Instance.new("TextLabel")
                 SelLabel.Parent = DropdownFrame
                 SelLabel.BackgroundTransparency = 1
-                SelLabel.Size = UDim2.new(0.5, -40, 0, 42)
-                SelLabel.Position = UDim2.new(0.5, 8, 0, 0)
+                SelLabel.Size = descText and UDim2.new(0.5, -40, 0, 24) or UDim2.new(0.5, -40, 0, 42)
+                SelLabel.Position = descText and UDim2.new(0.5, 8, 0, 8) or UDim2.new(0.5, 8, 0, 0)
                 SelLabel.Font = Enum.Font.GothamBold
                 SelLabel.Text = tostring(CurrentOption)
                 SelLabel.TextColor3 = Theme.Accent
                 SelLabel.TextSize = 13
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
+                SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
                 local ArrowIcon = Instance.new("ImageLabel")
                 ArrowIcon.Parent = DropdownFrame
                 ArrowIcon.BackgroundTransparency = 1
-                ArrowIcon.Position = UDim2.new(1, -30, 0, 12)
+                ArrowIcon.Position = descText and UDim2.new(1, -30, 0, 19) or UDim2.new(1, -30, 0, 12)
                 ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 ArrowIcon.ImageColor3 = Theme.TextMuted
@@ -1288,6 +1396,10 @@ function EmperUI:CreateWindow(options)
                     UpdateDropdownSize()
                 end
 
+                function DropdownObj:GetValue()
+                    return CurrentOption
+                end
+
                 WindowObj.ConfigElements[dropdownText] = {
                     Type = "Dropdown",
                     GetValue = function() return CurrentOption end,
@@ -1307,7 +1419,20 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Multi Dropdown ]
-            function Section:CreateMultiDropdown(dropdownText, options, defaultOptions, callback)
+            function Section:CreateMultiDropdown(arg1, arg2, arg3, arg4)
+                local dropdownText, options, defaultOptions, callback
+                if type(arg1) == "table" then
+                    dropdownText = arg1.Title or arg1.Name or "Multi Dropdown"
+                    options = arg1.Values or arg1.Options or {}
+                    defaultOptions = arg1.Value or arg1.Default
+                    callback = arg1.Callback
+                else
+                    dropdownText = arg1
+                    options = arg2
+                    defaultOptions = arg3
+                    callback = arg4
+                end
+                
                 options = options or {}
                 local CurrentOptions = type(defaultOptions) == "table" and defaultOptions or {}
                 local Expanded = false
@@ -1338,19 +1463,20 @@ function EmperUI:CreateWindow(options)
                 local Label = Instance.new("TextLabel")
                 Label.Parent = DropdownFrame
                 Label.BackgroundTransparency = 1
-                Label.Size = UDim2.new(0.4, -16, 0, 42)
+                Label.Size = UDim2.new(0.5, -16, 0, 42)
                 Label.Position = UDim2.new(0, 16, 0, 0)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = dropdownText
                 Label.TextColor3 = Theme.Text
                 Label.TextSize = 13
                 Label.TextXAlignment = Enum.TextXAlignment.Left
+                Label.TextTruncate = Enum.TextTruncate.AtEnd
 
                 local SelLabel = Instance.new("TextLabel")
                 SelLabel.Parent = DropdownFrame
                 SelLabel.BackgroundTransparency = 1
-                SelLabel.Size = UDim2.new(0.6, -40, 0, 42)
-                SelLabel.Position = UDim2.new(0.4, 8, 0, 0)
+                SelLabel.Size = UDim2.new(0.5, -40, 0, 42)
+                SelLabel.Position = UDim2.new(0.5, 8, 0, 0)
                 SelLabel.Font = Enum.Font.GothamBold
                 
                 local function UpdateSelLabel()
@@ -1523,11 +1649,29 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create TextBox ]
-            function Section:CreateTextBox(tbText, placeholder, callback)
+            function Section:CreateTextBox(arg1, arg2, arg3)
+                local tbText, placeholder, callback
+                if type(arg1) == "table" then
+                    tbText = arg1.Title or arg1.Name or "TextBox"
+                    placeholder = arg1.Placeholder or ""
+                    callback = arg1.Callback
+                else
+                    tbText = arg1
+                    placeholder = arg2
+                    callback = arg3
+                end
+                
+                local descText
+                if type(arg1) == "table" then
+                    descText = arg1.Desc or arg1.Description
+                end
+                
+                local baseHeight = descText and 56 or 42
+                
                 local TbFrame = Instance.new("Frame")
                 TbFrame.Parent = ParentCol
                 TbFrame.BackgroundColor3 = Theme.ElementBg
-                TbFrame.Size = UDim2.new(1, 0, 0, 42)
+                TbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 TbFrame.BorderSizePixel = 0
 
                 local TbCorner = Instance.new("UICorner")
@@ -1543,12 +1687,27 @@ function EmperUI:CreateWindow(options)
                 TbLabel.Parent = TbFrame
                 TbLabel.BackgroundTransparency = 1
                 TbLabel.Position = UDim2.new(0, 16, 0, 0)
-                TbLabel.Size = UDim2.new(0.5, -20, 1, 0)
+                TbLabel.Size = descText and UDim2.new(0.5, -16, 0, 24) or UDim2.new(0.5, -16, 1, 0)
+                TbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 TbLabel.Font = Enum.Font.GothamMedium
                 TbLabel.Text = tbText
                 TbLabel.TextColor3 = Theme.Text
                 TbLabel.TextSize = 13
                 TbLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+                if descText then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Parent = TbFrame
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Size = UDim2.new(0.5, -16, 0, 14)
+                    DescLabel.Position = UDim2.new(0, 16, 0, 30)
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.Text = descText
+                    DescLabel.TextColor3 = Theme.TextMuted
+                    DescLabel.TextSize = 11
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                end
 
                 local TextBoxBg = Instance.new("Frame")
                 TextBoxBg.Parent = TbFrame
@@ -1596,6 +1755,10 @@ function EmperUI:CreateWindow(options)
                 function TextBoxObj:SetValue(val)
                     TextBox.Text = tostring(val)
                 end
+                
+                function TextBoxObj:GetValue()
+                    return TextBox.Text
+                end
 
                 WindowObj.ConfigElements[tbText] = {
                     Type = "TextBox",
@@ -1607,11 +1770,29 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Keybind ]
-            function Section:CreateKeybind(kbText, defaultKey, callback)
+            function Section:CreateKeybind(arg1, arg2, arg3)
+                local kbText, defaultKey, callback
+                if type(arg1) == "table" then
+                    kbText = arg1.Title or arg1.Name or "Keybind"
+                    defaultKey = arg1.Value or arg1.Key or arg1.Default
+                    callback = arg1.Callback
+                else
+                    kbText = arg1
+                    defaultKey = arg2
+                    callback = arg3
+                end
+                
+                local descText
+                if type(arg1) == "table" then
+                    descText = arg1.Desc or arg1.Description
+                end
+                
+                local baseHeight = descText and 56 or 42
+                
                 local KbFrame = Instance.new("Frame")
                 KbFrame.Parent = ParentCol
                 KbFrame.BackgroundColor3 = Theme.ElementBg
-                KbFrame.Size = UDim2.new(1, 0, 0, 42)
+                KbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 KbFrame.BorderSizePixel = 0
 
                 local KbCorner = Instance.new("UICorner")
@@ -1626,13 +1807,27 @@ function EmperUI:CreateWindow(options)
                 local KbLabel = Instance.new("TextLabel")
                 KbLabel.Parent = KbFrame
                 KbLabel.BackgroundTransparency = 1
-                KbLabel.Position = UDim2.new(0, 16, 0, 0)
-                KbLabel.Size = UDim2.new(0.5, -20, 1, 0)
+                KbLabel.Size = descText and UDim2.new(0.5, -16, 0, 24) or UDim2.new(0.5, -20, 1, 0)
+                KbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 KbLabel.Font = Enum.Font.GothamMedium
                 KbLabel.Text = kbText
                 KbLabel.TextColor3 = Theme.Text
                 KbLabel.TextSize = 13
                 KbLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+                if descText then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Parent = KbFrame
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Size = UDim2.new(0.5, -16, 0, 14)
+                    DescLabel.Position = UDim2.new(0, 16, 0, 30)
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.Text = descText
+                    DescLabel.TextColor3 = Theme.TextMuted
+                    DescLabel.TextSize = 11
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
+                end
 
                 local BindBg = Instance.new("Frame")
                 BindBg.Parent = KbFrame
@@ -1723,7 +1918,14 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Label ]
-            function Section:CreateLabel(labelText)
+            function Section:CreateLabel(arg1)
+                local labelText
+                if type(arg1) == "table" then
+                    labelText = arg1.Title or arg1.Text or arg1.Name or "Label"
+                else
+                    labelText = arg1
+                end
+                
                 local LblFrame = Instance.new("Frame")
                 LblFrame.Parent = ParentCol
                 LblFrame.BackgroundTransparency = 1
@@ -1764,7 +1966,18 @@ function EmperUI:CreateWindow(options)
             end
 
             -- [ Create Colorpicker ]
-            function Section:CreateColorpicker(cpText, defaultColor, callback)
+            function Section:CreateColorpicker(arg1, arg2, arg3)
+                local cpText, defaultColor, callback
+                if type(arg1) == "table" then
+                    cpText = arg1.Title or arg1.Name or "Colorpicker"
+                    defaultColor = arg1.Value or arg1.Color or arg1.Default or Color3.new(1, 1, 1)
+                    callback = arg1.Callback
+                else
+                    cpText = arg1
+                    defaultColor = arg2
+                    callback = arg3
+                end
+                
                 local CurrentColor = defaultColor or Color3.fromRGB(255, 255, 255)
                 local Expanded = false
 
@@ -1968,6 +2181,18 @@ function EmperUI:CreateWindow(options)
 
                 return CpObj
             end
+
+            -- [ Aliases for modern dictionary API ]
+            Section.Button = Section.CreateButton
+            Section.Toggle = Section.CreateToggle
+            Section.Slider = Section.CreateSlider
+            Section.Dropdown = Section.CreateDropdown
+            Section.MultiDropdown = Section.CreateMultiDropdown
+            Section.TextBox = Section.CreateTextBox
+            Section.Keybind = Section.CreateKeybind
+            Section.Colorpicker = Section.CreateColorpicker
+            Section.Label = Section.CreateLabel
+            Section.Divider = Section.CreateDivider
 
             return Section
         end
@@ -2394,6 +2619,130 @@ function EmperUI:CreateWindow(options)
             end
             EmperUI:Notify({Title = "Config Loaded", Message = "Loaded configuration from " .. fileName .. ".json", Type = "success", Duration = 3})
         end
+    end
+
+    function WindowObj:DeleteConfig(folderName, fileName)
+        if not isfile or not delfile then return end
+        local path = folderName .. "/" .. fileName .. ".json"
+        if isfile(path) then
+            pcall(delfile, path)
+            EmperUI:Notify({Title = "Config Deleted", Message = "Deleted configuration " .. fileName .. ".json", Type = "info", Duration = 3})
+        end
+    end
+
+    function WindowObj:BuildSettingsSystem(Section, folderName)
+        folderName = folderName or "EmperHub"
+        
+        Section:Label("Configuration System")
+        
+        local ConfigNameBox = Section:TextBox({
+            Title = "Config Name",
+            Placeholder = "ตั้งชื่อ Config ที่นี่...",
+            Callback = function() end
+        })
+
+        local ConfigDropdown = Section:Dropdown({
+            Title = "Saved Configs",
+            Values = WindowObj:GetConfigs(folderName),
+            Value = "Select Config",
+            Callback = function() end
+        })
+
+        Section:Button({
+            Title = "Save Config",
+            Desc = "บันทึกการตั้งค่าปัจจุบัน",
+            Callback = function()
+                local name = ConfigNameBox:GetValue()
+                if name == "" then
+                    EmperUI:Notify({Title = "Error", Message = "กรุณาตั้งชื่อ Config ในช่องด้านบนก่อน!", Type = "error", Duration = 3})
+                    return
+                end
+                WindowObj:SaveConfig(folderName, name)
+                ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName), name)
+            end
+        })
+
+        Section:Button({
+            Title = "Load Config",
+            Desc = "โหลดการตั้งค่าที่เลือก",
+            Callback = function()
+                local name = ConfigDropdown:GetValue()
+                if name == "" or name == "Select Config" then
+                    EmperUI:Notify({Title = "Error", Message = "กรุณาเลือก Config จากดรอปดาวน์ก่อน!", Type = "error", Duration = 3})
+                    return
+                end
+                WindowObj:LoadConfig(folderName, name)
+                ConfigNameBox:SetValue(name)
+            end
+        })
+
+        Section:Button({
+            Title = "Delete Config",
+            Desc = "ลบไฟล์การตั้งค่าที่เลือก",
+            Callback = function()
+                local name = ConfigDropdown:GetValue()
+                if name == "" or name == "Select Config" then
+                    EmperUI:Notify({Title = "Error", Message = "กรุณาเลือก Config ที่ต้องการลบก่อน!", Type = "error", Duration = 3})
+                    return
+                end
+                
+                WindowObj:ShowDialog("Delete Config", "Are you sure you want to delete config '" .. name .. "'?", {"Yes", "Cancel"}, function(choice)
+                    if choice == "Yes" then
+                        WindowObj:DeleteConfig(folderName, name)
+                        ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName))
+                        ConfigNameBox:SetValue("")
+                    end
+                end)
+            end
+        })
+
+        Section:Button({
+            Title = "Refresh Configs",
+            Callback = function()
+                ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName))
+                EmperUI:Notify({Title = "Refreshed", Message = "รีเฟรชรายชื่อ Config เรียบร้อย", Type = "success", Duration = 2})
+            end
+        })
+
+        local AutoLoadToggle = Section:Toggle({
+            Title = "Auto Load Config",
+            Desc = "บันทึกและโหลดออโต้เมื่อเปิดสคริปต์",
+            Default = false,
+            Callback = function(state)
+                if writefile then
+                    local targetConfig = state and ConfigDropdown:GetValue() or ""
+                    if targetConfig == "Select Config" then targetConfig = "" end
+                    
+                    if not isfolder(folderName) then makefolder(folderName) end
+                    writefile(folderName .. "/autoload.txt", targetConfig)
+                    
+                    if state and targetConfig ~= "" then
+                        EmperUI:Notify({Title = "Auto Load Enabled", Message = "ตั้งออโต้โหลด: " .. targetConfig, Type = "success", Duration = 3})
+                    end
+                end
+            end
+        })
+
+        task.spawn(function()
+            if isfile and isfile(folderName .. "/autoload.txt") then
+                local autoName = readfile(folderName .. "/autoload.txt")
+                if autoName and autoName ~= "" then
+                    task.wait(0.5)
+                    pcall(function()
+                        WindowObj:LoadConfig(folderName, autoName)
+                        ConfigNameBox:SetValue(autoName)
+                        ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName), autoName)
+                        AutoLoadToggle:SetState(true)
+                        EmperUI:Notify({
+                            Title = "Auto Load", 
+                            Message = "โหลด Config [" .. autoName .. "] อัตโนมัติแล้ว!", 
+                            Type = "success", 
+                            Duration = 4
+                        })
+                    end)
+                end
+            end
+        end)
     end
 
     return WindowObj
