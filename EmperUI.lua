@@ -291,6 +291,11 @@ local function MakeDraggable(topbarObject, object)
 end
 
 function EmperUI:CreateWindow(options)
+    -- ป้องกัน UI ซ้อนทับ (ปิดอันเก่าก่อนสร้างอันใหม่)
+    if getgenv().EmperUI_Instance then
+        pcall(function() getgenv().EmperUI_Instance:Destroy() end)
+    end
+
     options = options or {}
     local WindowTitle = options.Title or "PREMIUM HUB"
     local WindowIcon = options.Icon or "rbxassetid://11681541018"
@@ -342,6 +347,9 @@ function EmperUI:CreateWindow(options)
     ScreenGui.Parent = TargetParent
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
+    
+    -- เก็บอ้างอิงไว้เพื่อใช้ลบตอนรัน UI ซ้อน
+    getgenv().EmperUI_Instance = ScreenGui
 
     local DropShadow = Instance.new("ImageLabel")
     DropShadow.Name = "DropShadow"
