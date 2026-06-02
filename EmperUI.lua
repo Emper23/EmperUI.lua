@@ -8,6 +8,70 @@ local CoreGui = game:GetService("CoreGui")
 
 local TargetParent = gethui and gethui() or CoreGui
 
+
+EmperUI.Themes = {
+    Default = {
+        Background = Color3.fromRGB(15, 15, 20),
+        Sidebar = Color3.fromRGB(20, 20, 28),
+        Topbar = Color3.fromRGB(20, 20, 28),
+        Accent = Color3.fromRGB(0, 230, 255),
+        Accent2 = Color3.fromRGB(255, 0, 128),
+        Text = Color3.fromRGB(245, 245, 250),
+        TextMuted = Color3.fromRGB(120, 122, 138),
+        ElementBg = Color3.fromRGB(25, 27, 38),
+        ElementHover = Color3.fromRGB(35, 37, 50),
+        Border = Color3.fromRGB(45, 48, 65)
+    },
+    Sakura = {
+        Background = Color3.fromRGB(25, 18, 25),
+        Sidebar = Color3.fromRGB(35, 25, 35),
+        Topbar = Color3.fromRGB(35, 25, 35),
+        Accent = Color3.fromRGB(255, 140, 180),
+        Accent2 = Color3.fromRGB(255, 200, 220),
+        Text = Color3.fromRGB(255, 240, 245),
+        TextMuted = Color3.fromRGB(180, 150, 160),
+        ElementBg = Color3.fromRGB(45, 30, 45),
+        ElementHover = Color3.fromRGB(60, 40, 60),
+        Border = Color3.fromRGB(75, 50, 75)
+    },
+    Blood = {
+        Background = Color3.fromRGB(15, 5, 5),
+        Sidebar = Color3.fromRGB(25, 10, 10),
+        Topbar = Color3.fromRGB(25, 10, 10),
+        Accent = Color3.fromRGB(220, 20, 20),
+        Accent2 = Color3.fromRGB(255, 50, 50),
+        Text = Color3.fromRGB(255, 220, 220),
+        TextMuted = Color3.fromRGB(150, 80, 80),
+        ElementBg = Color3.fromRGB(35, 15, 15),
+        ElementHover = Color3.fromRGB(50, 20, 20),
+        Border = Color3.fromRGB(70, 25, 25)
+    },
+    Ocean = {
+        Background = Color3.fromRGB(5, 15, 25),
+        Sidebar = Color3.fromRGB(10, 25, 40),
+        Topbar = Color3.fromRGB(10, 25, 40),
+        Accent = Color3.fromRGB(0, 150, 255),
+        Accent2 = Color3.fromRGB(0, 200, 255),
+        Text = Color3.fromRGB(220, 240, 255),
+        TextMuted = Color3.fromRGB(100, 140, 180),
+        ElementBg = Color3.fromRGB(15, 35, 55),
+        ElementHover = Color3.fromRGB(25, 50, 75),
+        Border = Color3.fromRGB(40, 70, 100)
+    },
+    Midnight = {
+        Background = Color3.fromRGB(5, 5, 5),
+        Sidebar = Color3.fromRGB(12, 12, 12),
+        Topbar = Color3.fromRGB(12, 12, 12),
+        Accent = Color3.fromRGB(120, 0, 255),
+        Accent2 = Color3.fromRGB(180, 50, 255),
+        Text = Color3.fromRGB(230, 230, 230),
+        TextMuted = Color3.fromRGB(100, 100, 100),
+        ElementBg = Color3.fromRGB(20, 20, 20),
+        ElementHover = Color3.fromRGB(30, 30, 30),
+        Border = Color3.fromRGB(40, 40, 40)
+    }
+}
+
 local function RandomName()
     return HttpService:GenerateGUID(false):gsub("-", "")
 end
@@ -155,7 +219,7 @@ function EmperUI:Notify(opts)
     MsgLabel.Position = UDim2.new(0, 50, 0, 28)
     MsgLabel.Size = UDim2.new(1, -56, 0, 28)
     MsgLabel.Font = Enum.Font.Gotham
-    MsgLabel.TextSize = 13
+    MsgLabel.TextSize = 15
     MsgLabel.TextColor3 = Color3.fromRGB(175, 177, 195)
     MsgLabel.Text = message
     MsgLabel.TextWrapped = true
@@ -229,6 +293,7 @@ end
 function EmperUI:CreateWindow(options)
     options = options or {}
     local WindowTitle = options.Title or "PREMIUM HUB"
+    local WindowIcon = options.Icon or "rbxassetid://11681541018"
     local WindowSize = options.Size or UDim2.new(0, 680, 0, 450)
     local WindowObj = { Tabs = {}, ConfigElements = {} }
     
@@ -244,6 +309,33 @@ function EmperUI:CreateWindow(options)
         ElementHover = Color3.fromRGB(35, 37, 50),
         Border = Color3.fromRGB(45, 48, 65)
     }
+    
+    WindowObj.ThemeObjects = {}
+    
+    function WindowObj:ApplyTheme(instance, property, themeKey)
+        if not instance or not Theme[themeKey] then return end
+        instance[property] = Theme[themeKey]
+        table.insert(WindowObj.ThemeObjects, {Instance = instance, Property = property, ThemeKey = themeKey})
+    end
+
+    function WindowObj:SetTheme(themeName)
+        local selectedTheme = EmperUI.Themes[themeName]
+        if not selectedTheme then return end
+        
+        -- Update local theme colors
+        for k, v in pairs(selectedTheme) do
+            Theme[k] = v
+        end
+        
+        -- Tween all registered UI elements
+        for _, data in ipairs(WindowObj.ThemeObjects) do
+            if data.Instance and data.Instance.Parent then
+                TweenService:Create(data.Instance, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                    [data.Property] = Theme[data.ThemeKey]
+                }):Play()
+            end
+        end
+    end
 
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = RandomName()
@@ -265,12 +357,39 @@ function EmperUI:CreateWindow(options)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Theme.Background
+    WindowObj:ApplyTheme(MainFrame, "BackgroundColor3", "Background")
     MainFrame.BackgroundTransparency = 0.15
     MainFrame.Position = UDim2.new(0.5, -WindowSize.X.Offset/2, 0.5, -WindowSize.Y.Offset/2)
     MainFrame.Size = WindowSize
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
+    
+    local BackgroundImage = Instance.new("ImageLabel")
+    BackgroundImage.Name = "BackgroundImage"
+    BackgroundImage.Parent = MainFrame
+    BackgroundImage.BackgroundTransparency = 1
+    BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+    BackgroundImage.Image = ""
+    BackgroundImage.ImageTransparency = 0.8
+    BackgroundImage.ScaleType = Enum.ScaleType.Crop
+    BackgroundImage.ZIndex = 0
+
+    function WindowObj:SetBackgroundImage(id)
+        if id and id ~= "" then
+            local rbxId = id:match("%d+")
+            if rbxId then
+                BackgroundImage.Image = "rbxassetid://" .. rbxId
+            else
+                BackgroundImage.Image = ""
+            end
+        else
+            BackgroundImage.Image = ""
+        end
+    end
+
+    function WindowObj:SetBackgroundTransparency(val)
+        BackgroundImage.ImageTransparency = val
+    end
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 10)
@@ -306,7 +425,7 @@ function EmperUI:CreateWindow(options)
 
     local Topbar = Instance.new("Frame")
     Topbar.Parent = MainFrame
-    Topbar.BackgroundColor3 = Theme.Topbar
+    WindowObj:ApplyTheme(Topbar, "BackgroundColor3", "Topbar")
     Topbar.BackgroundTransparency = 0.15
     Topbar.Size = UDim2.new(1, 0, 0, 45)
     Topbar.BorderSizePixel = 0
@@ -317,7 +436,7 @@ function EmperUI:CreateWindow(options)
 
     local TopbarPatch = Instance.new("Frame")
     TopbarPatch.Parent = Topbar
-    TopbarPatch.BackgroundColor3 = Theme.Topbar
+    WindowObj:ApplyTheme(TopbarPatch, "BackgroundColor3", "Topbar")
     TopbarPatch.BackgroundTransparency = 0.15
     TopbarPatch.BorderSizePixel = 0
     TopbarPatch.Position = UDim2.new(0, 0, 0.5, 0)
@@ -325,29 +444,80 @@ function EmperUI:CreateWindow(options)
 
     local TopbarLine = Instance.new("Frame")
     TopbarLine.Parent = Topbar
-    TopbarLine.BackgroundColor3 = Theme.Border
+    WindowObj:ApplyTheme(TopbarLine, "BackgroundColor3", "Border")
     TopbarLine.Position = UDim2.new(0, 0, 1, -1)
     TopbarLine.Size = UDim2.new(1, 0, 0, 1)
     TopbarLine.BorderSizePixel = 0
 
-    local TitleIcon = Instance.new("ImageLabel")
-    TitleIcon.Parent = Topbar
-    TitleIcon.BackgroundTransparency = 1
-    TitleIcon.Position = UDim2.new(0, 16, 0.5, -9)
-    TitleIcon.Size = UDim2.new(0, 18, 0, 18)
-    TitleIcon.Image = "rbxassetid://11681541018"
-    TitleIcon.ImageColor3 = Theme.Accent
-
     local Title = Instance.new("TextLabel")
     Title.Parent = Topbar
     Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 42, 0, 0)
+    Title.Position = UDim2.new(0, 16, 0, 0)
     Title.Size = UDim2.new(1, -200, 1, 0)
     Title.Font = Enum.Font.GothamMedium
     Title.Text = WindowTitle
-    Title.TextColor3 = Theme.Text
+    WindowObj:ApplyTheme(Title, "TextColor3", "Text")
     Title.TextSize = 13
     Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ClockLabel = Instance.new("TextLabel")
+    ClockLabel.Parent = Topbar
+    ClockLabel.BackgroundTransparency = 1
+    ClockLabel.Position = UDim2.new(1, -220, 0, 0)
+    ClockLabel.Size = UDim2.new(0, 100, 1, 0)
+    ClockLabel.Font = Enum.Font.Gotham
+    WindowObj:ApplyTheme(ClockLabel, "TextColor3", "TextMuted")
+    ClockLabel.TextSize = 12
+    ClockLabel.TextXAlignment = Enum.TextXAlignment.Right
+    ClockLabel.Text = "00:00:00 AM"
+    
+    task.spawn(function()
+        while task.wait(1) do
+            local timeT = os.date("*t")
+            local hour = timeT.hour % 12
+            if hour == 0 then hour = 12 end
+            local ampm = timeT.hour >= 12 and "PM" or "AM"
+            ClockLabel.Text = string.format("%02d:%02d:%02d %s", hour, timeT.min, timeT.sec, ampm)
+        end
+    end)
+
+    -- [ Discord Button ]
+    function WindowObj:AddDiscordButton(inviteLink)
+        local DiscordBtn = Instance.new("ImageButton")
+        DiscordBtn.Parent = Topbar
+        DiscordBtn.BackgroundTransparency = 1
+        DiscordBtn.Position = UDim2.new(1, -36, 0.5, -9)
+        DiscordBtn.Size = UDim2.new(0, 18, 0, 18)
+        DiscordBtn.Image = "rbxassetid://11681580226" -- Default link icon (Change to Discord ID later)
+        WindowObj:ApplyTheme(DiscordBtn, "ImageColor3", "TextMuted")
+
+        DiscordBtn.MouseEnter:Connect(function()
+            TweenService:Create(DiscordBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Theme.Accent}):Play()
+        end)
+        
+        DiscordBtn.MouseLeave:Connect(function()
+            TweenService:Create(DiscordBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Theme.TextMuted}):Play()
+        end)
+
+        DiscordBtn.MouseButton1Click:Connect(function()
+            if setclipboard then
+                setclipboard(inviteLink)
+                EmperUI:Notify({
+                    Title = "Discord",
+                    Message = "คัดลอกลิงก์ Discord ลงคลิปบอร์ดแล้ว!",
+                    Type = "success",
+                    Duration = 3
+                })
+            else
+                EmperUI:Notify({
+                    Title = "Discord",
+                    Message = "Executor ของคุณไม่รองรับ setclipboard",
+                    Type = "error",
+                    Duration = 3
+                })
+            end
+        end)
+    end
 
     -- [ Window Controls: Minimize, Maximize, Close ]
     local Controls = Instance.new("Frame")
@@ -371,7 +541,7 @@ function EmperUI:CreateWindow(options)
     local function CreateControlButton(iconId, hoverColor, callback)
         local Btn = Instance.new("TextButton")
         Btn.Parent = Controls
-        Btn.BackgroundColor3 = Theme.Topbar
+        WindowObj:ApplyTheme(Btn, "BackgroundColor3", "Topbar")
         Btn.Size = UDim2.new(0, 28, 0, 28)
         Btn.Text = ""
         Btn.AutoButtonColor = false
@@ -386,7 +556,7 @@ function EmperUI:CreateWindow(options)
         Icon.Position = UDim2.new(0.5, -7, 0.5, -7)
         Icon.Size = UDim2.new(0, 14, 0, 14)
         Icon.Image = iconId
-        Icon.ImageColor3 = Theme.TextMuted
+        WindowObj:ApplyTheme(Icon, "ImageColor3", "TextMuted")
 
         Btn.MouseEnter:Connect(function()
             TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 32, 40)}):Play()
@@ -401,7 +571,7 @@ function EmperUI:CreateWindow(options)
 
     local MobileIcon = Instance.new("ImageButton")
     MobileIcon.Parent = ScreenGui
-    MobileIcon.BackgroundColor3 = Theme.Background
+    WindowObj:ApplyTheme(MobileIcon, "BackgroundColor3", "Background")
     MobileIcon.Position = UDim2.new(0.5, -25, 0, 20)
     MobileIcon.Size = UDim2.new(0, 50, 0, 50)
     MobileIcon.Visible = false
@@ -414,7 +584,7 @@ function EmperUI:CreateWindow(options)
     MobileIconCorner.Parent = MobileIcon
 
     local MobileIconStroke = Instance.new("UIStroke")
-    MobileIconStroke.Color = Theme.Accent
+    WindowObj:ApplyTheme(MobileIconStroke, "Color", "Accent")
     MobileIconStroke.Thickness = 2
     MobileIconStroke.Parent = MobileIcon
     
@@ -424,7 +594,7 @@ function EmperUI:CreateWindow(options)
     MobileIconImage.Position = UDim2.new(0.5, -12, 0.5, -12)
     MobileIconImage.Size = UDim2.new(0, 24, 0, 24)
     MobileIconImage.Image = "rbxassetid://10734896206"
-    MobileIconImage.ImageColor3 = Theme.Text
+    WindowObj:ApplyTheme(MobileIconImage, "ImageColor3", "Text")
 
     MakeDraggable(MobileIcon, MobileIcon)
 
@@ -451,7 +621,7 @@ function EmperUI:CreateWindow(options)
         isMaximized = not isMaximized
         if isMaximized then
             preMaximizeScale = MainScale.Scale
-            TweenService:Create(MainScale, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Scale = 1.35}):Play()
+            TweenService:Create(MainScale, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Scale = 0.5}):Play()
         else
             TweenService:Create(MainScale, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Scale = preMaximizeScale}):Play()
         end
@@ -488,7 +658,7 @@ function EmperUI:CreateWindow(options)
     ResizeHandle.Size = UDim2.new(0, 15, 0, 15)
     ResizeHandle.Text = "◢"
     ResizeHandle.TextSize = 14
-    ResizeHandle.TextColor3 = Theme.TextMuted
+    WindowObj:ApplyTheme(ResizeHandle, "TextColor3", "TextMuted")
     ResizeHandle.ZIndex = 100
     
     local Resizing = false
@@ -531,7 +701,7 @@ function EmperUI:CreateWindow(options)
 
     local Sidebar = Instance.new("Frame")
     Sidebar.Parent = MainFrame
-    Sidebar.BackgroundColor3 = Theme.Sidebar
+    WindowObj:ApplyTheme(Sidebar, "BackgroundColor3", "Sidebar")
     Sidebar.BackgroundTransparency = 0.25
     Sidebar.Position = UDim2.new(0, 12, 0, 55)
     Sidebar.Size = UDim2.new(0, 160, 1, -67)
@@ -542,16 +712,40 @@ function EmperUI:CreateWindow(options)
     SidebarCorner.Parent = Sidebar
 
     local SidebarStroke = Instance.new("UIStroke")
-    SidebarStroke.Color = Theme.Border
+    WindowObj:ApplyTheme(SidebarStroke, "Color", "Border")
     SidebarStroke.Thickness = 1
     SidebarStroke.Parent = Sidebar
+
+    local SidebarLogo = Instance.new("ImageLabel")
+    SidebarLogo.Name = "SidebarLogo"
+    SidebarLogo.Parent = Sidebar
+    SidebarLogo.BackgroundTransparency = 1
+    SidebarLogo.Position = UDim2.new(0.5, -45, 0, 16)
+    SidebarLogo.Size = UDim2.new(0, 90, 0, 90)
+    
+    local extractId = WindowIcon:match("%d+")
+    if extractId then
+        SidebarLogo.Image = "rbxthumb://type=Asset&id=" .. extractId .. "&w=150&h=150"
+    else
+        SidebarLogo.Image = WindowIcon
+    end
+    SidebarLogo.ImageColor3 = Color3.fromRGB(255, 255, 255)
+    
+    local SidebarLogoCorner = Instance.new("UICorner")
+    SidebarLogoCorner.CornerRadius = UDim.new(1, 0)
+    SidebarLogoCorner.Parent = SidebarLogo
+
+    local SidebarLogoStroke = Instance.new("UIStroke")
+    WindowObj:ApplyTheme(SidebarLogoStroke, "Color", "Accent")
+    SidebarLogoStroke.Thickness = 2
+    SidebarLogoStroke.Parent = SidebarLogo
 
     local GlobalIndicator = Instance.new("Frame")
     GlobalIndicator.Name = "GlobalIndicator"
     GlobalIndicator.Parent = Sidebar
-    GlobalIndicator.BackgroundColor3 = Theme.Accent
+    WindowObj:ApplyTheme(GlobalIndicator, "BackgroundColor3", "Accent")
     GlobalIndicator.Size = UDim2.new(0, 3, 0, 16)
-    GlobalIndicator.Position = UDim2.new(0, 12, 0, 22)
+    GlobalIndicator.Position = UDim2.new(0, 12, 0, 130)
     GlobalIndicator.BorderSizePixel = 0
     GlobalIndicator.ZIndex = 2
     GlobalIndicator.BackgroundTransparency = 1
@@ -575,13 +769,13 @@ function EmperUI:CreateWindow(options)
 
     local TabPadding = Instance.new("UIPadding")
     TabPadding.Parent = TabContainer
-    TabPadding.PaddingTop = UDim.new(0, 12)
+    TabPadding.PaddingTop = UDim.new(0, 124)
     TabPadding.PaddingLeft = UDim.new(0, 12)
     TabPadding.PaddingRight = UDim.new(0, 12)
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Parent = MainFrame
-    ContentArea.BackgroundColor3 = Theme.Sidebar
+    WindowObj:ApplyTheme(ContentArea, "BackgroundColor3", "Sidebar")
     ContentArea.BackgroundTransparency = 0.25
     ContentArea.Position = UDim2.new(0, 184, 0, 55)
     ContentArea.Size = UDim2.new(1, -196, 1, -67)
@@ -592,834 +786,24 @@ function EmperUI:CreateWindow(options)
     ContentCorner.Parent = ContentArea
 
     local ContentStroke = Instance.new("UIStroke")
-    ContentStroke.Color = Theme.Border
+    WindowObj:ApplyTheme(ContentStroke, "Color", "Border")
     ContentStroke.Thickness = 1
     ContentStroke.Parent = ContentArea
 
-   local Icons = {
-    ["accessibility"] = "rbxassetid://10709751939",
-    ["activity"] = "rbxassetid://10709752035",
-    ["air-vent"] = "rbxassetid://10709752131",
-    ["airplay"] = "rbxassetid://10709752254",
-    ["alarm-check"] = "rbxassetid://10709752405",
-    ["alarm-clock"] = "rbxassetid://10709752630",
-    ["alarm-clock-off"] = "rbxassetid://10709752508",
-    ["alarm-minus"] = "rbxassetid://10709752732",
-    ["alarm-plus"] = "rbxassetid://10709752825",
-    ["album"] = "rbxassetid://10709752906",
-    ["alert-circle"] = "rbxassetid://10709752996",
-    ["alert-octagon"] = "rbxassetid://10709753064",
-    ["alert-triangle"] = "rbxassetid://10709753149",
-    ["align-center"] = "rbxassetid://10709753570",
-    ["align-center-horizontal"] = "rbxassetid://10709753272",
-    ["align-center-vertical"] = "rbxassetid://10709753421",
-    ["align-end-horizontal"] = "rbxassetid://10709753692",
-    ["align-end-vertical"] = "rbxassetid://10709753808",
-    ["align-horizontal-distribute-center"] = "rbxassetid://10747779791",
-    ["align-horizontal-distribute-end"] = "rbxassetid://10747784534",
-    ["align-horizontal-distribute-start"] = "rbxassetid://10709754118",
-    ["align-horizontal-justify-center"] = "rbxassetid://10709754204",
-    ["align-horizontal-justify-end"] = "rbxassetid://10709754317",
-    ["align-horizontal-justify-start"] = "rbxassetid://10709754436",
-    ["align-horizontal-space-around"] = "rbxassetid://10709754590",
-    ["align-horizontal-space-between"] = "rbxassetid://10709754749",
-    ["align-justify"] = "rbxassetid://10709759610",
-    ["align-left"] = "rbxassetid://10709759764",
-    ["align-right"] = "rbxassetid://10709759895",
-    ["align-start-horizontal"] = "rbxassetid://10709760051",
-    ["align-start-vertical"] = "rbxassetid://10709760244",
-    ["align-vertical-distribute-center"] = "rbxassetid://10709760351",
-    ["align-vertical-distribute-end"] = "rbxassetid://10709760434",
-    ["align-vertical-distribute-start"] = "rbxassetid://10709760612",
-    ["align-vertical-justify-center"] = "rbxassetid://10709760814",
-    ["align-vertical-justify-end"] = "rbxassetid://10709761003",
-    ["align-vertical-justify-start"] = "rbxassetid://10709761176",
-    ["align-vertical-space-around"] = "rbxassetid://10709761324",
-    ["align-vertical-space-between"] = "rbxassetid://10709761434",
-    ["anchor"] = "rbxassetid://10709761530",
-    ["angry"] = "rbxassetid://10709761629",
-    ["annoyed"] = "rbxassetid://10709761722",
-    ["aperture"] = "rbxassetid://10709761813",
-    ["apple"] = "rbxassetid://10709761889",
-    ["archive"] = "rbxassetid://10709762233",
-    ["archive-restore"] = "rbxassetid://10709762058",
-    ["armchair"] = "rbxassetid://10709762327",
-    ["arrow-big-down"] = "rbxassetid://10747796644",
-    ["arrow-big-left"] = "rbxassetid://10709762574",
-    ["arrow-big-right"] = "rbxassetid://10709762727",
-    ["arrow-big-up"] = "rbxassetid://10709762879",
-    ["arrow-down"] = "rbxassetid://10709767827",
-    ["arrow-down-circle"] = "rbxassetid://10709763034",
-    ["arrow-down-left"] = "rbxassetid://10709767656",
-    ["arrow-down-right"] = "rbxassetid://10709767750",
-    ["arrow-left"] = "rbxassetid://10709768114",
-    ["arrow-left-circle"] = "rbxassetid://10709767936",
-    ["arrow-left-right"] = "rbxassetid://10709768019",
-    ["arrow-right"] = "rbxassetid://10709768347",
-    ["arrow-right-circle"] = "rbxassetid://10709768226",
-    ["arrow-up"] = "rbxassetid://10709768939",
-    ["arrow-up-circle"] = "rbxassetid://10709768432",
-    ["arrow-up-down"] = "rbxassetid://10709768538",
-    ["arrow-up-left"] = "rbxassetid://10709768661",
-    ["arrow-up-right"] = "rbxassetid://10709768787",
-    ["asterisk"] = "rbxassetid://10709769095",
-    ["at-sign"] = "rbxassetid://10709769286",
-    ["award"] = "rbxassetid://10709769406",
-    ["axe"] = "rbxassetid://10709769508",
-    ["axis-3d"] = "rbxassetid://10709769598",
-    ["baby"] = "rbxassetid://10709769732",
-    ["backpack"] = "rbxassetid://10709769841",
-    ["baggage-claim"] = "rbxassetid://10709769935",
-    ["banana"] = "rbxassetid://10709770005",
-    ["banknote"] = "rbxassetid://10709770178",
-    ["bar-chart"] = "rbxassetid://10709773755",
-    ["bar-chart-2"] = "rbxassetid://10709770317",
-    ["bar-chart-3"] = "rbxassetid://10709770431",
-    ["bar-chart-4"] = "rbxassetid://10709770560",
-    ["bar-chart-horizontal"] = "rbxassetid://10709773669",
-    ["barcode"] = "rbxassetid://10747360675",
-    ["baseline"] = "rbxassetid://10709773863",
-    ["bath"] = "rbxassetid://10709773963",
-    ["battery"] = "rbxassetid://10709774640",
-    ["battery-charging"] = "rbxassetid://10709774068",
-    ["battery-full"] = "rbxassetid://10709774206",
-    ["battery-low"] = "rbxassetid://10709774370",
-    ["battery-medium"] = "rbxassetid://10709774513",
-    ["beaker"] = "rbxassetid://10709774756",
-    ["bed"] = "rbxassetid://10709775036",
-    ["bed-double"] = "rbxassetid://10709774864",
-    ["bed-single"] = "rbxassetid://10709774968",
-    ["beer"] = "rbxassetid://10709775167",
-    ["bell"] = "rbxassetid://10709775704",
-    ["bell-minus"] = "rbxassetid://10709775241",
-    ["bell-off"] = "rbxassetid://10709775320",
-    ["bell-plus"] = "rbxassetid://10709775448",
-    ["bell-ring"] = "rbxassetid://10709775560",
-    ["bike"] = "rbxassetid://10709775894",
-    ["binary"] = "rbxassetid://10709776050",
-    ["bitcoin"] = "rbxassetid://10709776126",
-    ["bluetooth"] = "rbxassetid://10709776655",
-    ["bluetooth-connected"] = "rbxassetid://10709776240",
-    ["bluetooth-off"] = "rbxassetid://10709776344",
-    ["bluetooth-searching"] = "rbxassetid://10709776501",
-    ["bold"] = "rbxassetid://10747813908",
-    ["bomb"] = "rbxassetid://10709781460",
-    ["bone"] = "rbxassetid://10709781605",
-    ["book"] = "rbxassetid://10709781824",
-    ["book-open"] = "rbxassetid://10709781717",
-    ["bookmark"] = "rbxassetid://10709782154",
-    ["bookmark-minus"] = "rbxassetid://10709781919",
-    ["bookmark-plus"] = "rbxassetid://10709782044",
-    ["bot"] = "rbxassetid://10709782230",
-    ["box"] = "rbxassetid://10709782497",
-    ["box-select"] = "rbxassetid://10709782342",
-    ["boxes"] = "rbxassetid://10709782582",
-    ["briefcase"] = "rbxassetid://10709782662",
-    ["brush"] = "rbxassetid://10709782758",
-    ["bug"] = "rbxassetid://10709782845",
-    ["building"] = "rbxassetid://10709783051",
-    ["building-2"] = "rbxassetid://10709782939",
-    ["bus"] = "rbxassetid://10709783137",
-    ["cake"] = "rbxassetid://10709783217",
-    ["calculator"] = "rbxassetid://10709783311",
-    ["calendar"] = "rbxassetid://10709789505",
-    ["calendar-check"] = "rbxassetid://10709783474",
-    ["calendar-check-2"] = "rbxassetid://10709783392",
-    ["calendar-clock"] = "rbxassetid://10709783577",
-    ["calendar-days"] = "rbxassetid://10709783673",
-    ["calendar-heart"] = "rbxassetid://10709783835",
-    ["calendar-minus"] = "rbxassetid://10709783959",
-    ["calendar-off"] = "rbxassetid://10709788784",
-    ["calendar-plus"] = "rbxassetid://10709788937",
-    ["calendar-range"] = "rbxassetid://10709789053",
-    ["calendar-search"] = "rbxassetid://10709789200",
-    ["calendar-x"] = "rbxassetid://10709789407",
-    ["calendar-x-2"] = "rbxassetid://10709789329",
-    ["camera"] = "rbxassetid://10709789686",
-    ["camera-off"] = "rbxassetid://10747822677",
-    ["car"] = "rbxassetid://10709789810",
-    ["carrot"] = "rbxassetid://10709789960",
-    ["cast"] = "rbxassetid://10709790097",
-    ["charge"] = "rbxassetid://10709790202",
-    ["check"] = "rbxassetid://10709790644",
-    ["check-circle"] = "rbxassetid://10709790387",
-    ["check-circle-2"] = "rbxassetid://10709790298",
-    ["check-square"] = "rbxassetid://10709790537",
-    ["chef-hat"] = "rbxassetid://10709790757",
-    ["cherry"] = "rbxassetid://10709790875",
-    ["chevron-down"] = "rbxassetid://10709790948",
-    ["chevron-first"] = "rbxassetid://10709791015",
-    ["chevron-last"] = "rbxassetid://10709791130",
-    ["chevron-left"] = "rbxassetid://10709791281",
-    ["chevron-right"] = "rbxassetid://10709791437",
-    ["chevron-up"] = "rbxassetid://10709791523",
-    ["chevrons-down"] = "rbxassetid://10709796864",
-    ["chevrons-down-up"] = "rbxassetid://10709791632",
-    ["chevrons-left"] = "rbxassetid://10709797151",
-    ["chevrons-left-right"] = "rbxassetid://10709797006",
-    ["chevrons-right"] = "rbxassetid://10709797382",
-    ["chevrons-right-left"] = "rbxassetid://10709797274",
-    ["chevrons-up"] = "rbxassetid://10709797622",
-    ["chevrons-up-down"] = "rbxassetid://10709797508",
-    ["chrome"] = "rbxassetid://10709797725",
-    ["circle"] = "rbxassetid://10709798174",
-    ["circle-dot"] = "rbxassetid://10709797837",
-    ["circle-ellipsis"] = "rbxassetid://10709797985",
-    ["circle-slashed"] = "rbxassetid://10709798100",
-    ["citrus"] = "rbxassetid://10709798276",
-    ["clapperboard"] = "rbxassetid://10709798350",
-    ["clipboard"] = "rbxassetid://10709799288",
-    ["clipboard-check"] = "rbxassetid://10709798443",
-    ["clipboard-copy"] = "rbxassetid://10709798574",
-    ["clipboard-edit"] = "rbxassetid://10709798682",
-    ["clipboard-list"] = "rbxassetid://10709798792",
-    ["clipboard-signature"] = "rbxassetid://10709798890",
-    ["clipboard-type"] = "rbxassetid://10709798999",
-    ["clipboard-x"] = "rbxassetid://10709799124",
-    ["clock"] = "rbxassetid://10709805144",
-    ["clock-1"] = "rbxassetid://10709799535",
-    ["clock-10"] = "rbxassetid://10709799718",
-    ["clock-11"] = "rbxassetid://10709799818",
-    ["clock-12"] = "rbxassetid://10709799962",
-    ["clock-2"] = "rbxassetid://10709803876",
-    ["clock-3"] = "rbxassetid://10709803989",
-    ["clock-4"] = "rbxassetid://10709804164",
-    ["clock-5"] = "rbxassetid://10709804291",
-    ["clock-6"] = "rbxassetid://10709804435",
-    ["clock-7"] = "rbxassetid://10709804599",
-    ["clock-8"] = "rbxassetid://10709804784",
-    ["clock-9"] = "rbxassetid://10709804996",
-    ["cloud"] = "rbxassetid://10709806740",
-    ["cloud-cog"] = "rbxassetid://10709805262",
-    ["cloud-drizzle"] = "rbxassetid://10709805371",
-    ["cloud-fog"] = "rbxassetid://10709805477",
-    ["cloud-hail"] = "rbxassetid://10709805596",
-    ["cloud-lightning"] = "rbxassetid://10709805727",
-    ["cloud-moon"] = "rbxassetid://10709805942",
-    ["cloud-moon-rain"] = "rbxassetid://10709805838",
-    ["cloud-off"] = "rbxassetid://10709806060",
-    ["cloud-rain"] = "rbxassetid://10709806277",
-    ["cloud-rain-wind"] = "rbxassetid://10709806166",
-    ["cloud-snow"] = "rbxassetid://10709806374",
-    ["cloud-sun"] = "rbxassetid://10709806631",
-    ["cloud-sun-rain"] = "rbxassetid://10709806475",
-    ["cloudy"] = "rbxassetid://10709806859",
-    ["clover"] = "rbxassetid://10709806995",
-    ["code"] = "rbxassetid://10709810463",
-    ["code-2"] = "rbxassetid://10709807111",
-    ["codepen"] = "rbxassetid://10709810534",
-    ["codesandbox"] = "rbxassetid://10709810676",
-    ["coffee"] = "rbxassetid://10709810814",
-    ["cog"] = "rbxassetid://10709810948",
-    ["coins"] = "rbxassetid://10709811110",
-    ["columns"] = "rbxassetid://10709811261",
-    ["command"] = "rbxassetid://10709811365",
-    ["compass"] = "rbxassetid://10709811445",
-    ["component"] = "rbxassetid://10709811595",
-    ["concierge-bell"] = "rbxassetid://10709811706",
-    ["connection"] = "rbxassetid://10747361219",
-    ["contact"] = "rbxassetid://10709811834",
-    ["contrast"] = "rbxassetid://10709811939",
-    ["cookie"] = "rbxassetid://10709812067",
-    ["copy"] = "rbxassetid://10709812159",
-    ["copyleft"] = "rbxassetid://10709812251",
-    ["copyright"] = "rbxassetid://10709812311",
-    ["corner-down-left"] = "rbxassetid://10709812396",
-    ["corner-down-right"] = "rbxassetid://10709812485",
-    ["corner-left-down"] = "rbxassetid://10709812632",
-    ["corner-left-up"] = "rbxassetid://10709812784",
-    ["corner-right-down"] = "rbxassetid://10709812939",
-    ["corner-right-up"] = "rbxassetid://10709813094",
-    ["corner-up-left"] = "rbxassetid://10709813185",
-    ["corner-up-right"] = "rbxassetid://10709813281",
-    ["cpu"] = "rbxassetid://10709813383",
-    ["croissant"] = "rbxassetid://10709818125",
-    ["crop"] = "rbxassetid://10709818245",
-    ["cross"] = "rbxassetid://10709818399",
-    ["crosshair"] = "rbxassetid://10709818534",
-    ["crown"] = "rbxassetid://10709818626",
-    ["cup-soda"] = "rbxassetid://10709818763",
-    ["curly-braces"] = "rbxassetid://10709818847",
-    ["currency"] = "rbxassetid://10709818931",
-    ["database"] = "rbxassetid://10709818996",
-    ["delete"] = "rbxassetid://10709819059",
-    ["diamond"] = "rbxassetid://10709819149",
-    ["dice-1"] = "rbxassetid://10709819266",
-    ["dice-2"] = "rbxassetid://10709819361",
-    ["dice-3"] = "rbxassetid://10709819508",
-    ["dice-4"] = "rbxassetid://10709819670",
-    ["dice-5"] = "rbxassetid://10709819801",
-    ["dice-6"] = "rbxassetid://10709819896",
-    ["dices"] = "rbxassetid://10723343321",
-    ["diff"] = "rbxassetid://10723343416",
-    ["disc"] = "rbxassetid://10723343537",
-    ["divide"] = "rbxassetid://10723343805",
-    ["divide-circle"] = "rbxassetid://10723343636",
-    ["divide-square"] = "rbxassetid://10723343737",
-    ["dollar-sign"] = "rbxassetid://10723343958",
-    ["download"] = "rbxassetid://10723344270",
-    ["download-cloud"] = "rbxassetid://10723344088",
-    ["droplet"] = "rbxassetid://10723344432",
-    ["droplets"] = "rbxassetid://10734883356",
-    ["drumstick"] = "rbxassetid://10723344737",
-    ["edit"] = "rbxassetid://10734883598",
-    ["edit-2"] = "rbxassetid://10723344885",
-    ["edit-3"] = "rbxassetid://10723345088",
-    ["egg"] = "rbxassetid://10723345518",
-    ["egg-fried"] = "rbxassetid://10723345347",
-    ["electricity"] = "rbxassetid://10723345749",
-    ["electricity-off"] = "rbxassetid://10723345643",
-    ["equal"] = "rbxassetid://10723345990",
-    ["equal-not"] = "rbxassetid://10723345866",
-    ["eraser"] = "rbxassetid://10723346158",
-    ["euro"] = "rbxassetid://10723346372",
-    ["expand"] = "rbxassetid://10723346553",
-    ["external-link"] = "rbxassetid://10723346684",
-    ["eye"] = "rbxassetid://10723346959",
-    ["eye-off"] = "rbxassetid://10723346871",
-    ["factory"] = "rbxassetid://10723347051",
-    ["fan"] = "rbxassetid://10723354359",
-    ["fast-forward"] = "rbxassetid://10723354521",
-    ["feather"] = "rbxassetid://10723354671",
-    ["figma"] = "rbxassetid://10723354801",
-    ["file"] = "rbxassetid://10723374641",
-    ["file-archive"] = "rbxassetid://10723354921",
-    ["file-audio"] = "rbxassetid://10723355148",
-    ["file-audio-2"] = "rbxassetid://10723355026",
-    ["file-axis-3d"] = "rbxassetid://10723355272",
-    ["file-badge"] = "rbxassetid://10723355622",
-    ["file-badge-2"] = "rbxassetid://10723355451",
-    ["file-bar-chart"] = "rbxassetid://10723355887",
-    ["file-bar-chart-2"] = "rbxassetid://10723355746",
-    ["file-box"] = "rbxassetid://10723355989",
-    ["file-check"] = "rbxassetid://10723356210",
-    ["file-check-2"] = "rbxassetid://10723356100",
-    ["file-clock"] = "rbxassetid://10723356329",
-    ["file-code"] = "rbxassetid://10723356507",
-    ["file-cog"] = "rbxassetid://10723356830",
-    ["file-cog-2"] = "rbxassetid://10723356676",
-    ["file-diff"] = "rbxassetid://10723357039",
-    ["file-digit"] = "rbxassetid://10723357151",
-    ["file-down"] = "rbxassetid://10723357322",
-    ["file-edit"] = "rbxassetid://10723357495",
-    ["file-heart"] = "rbxassetid://10723357637",
-    ["file-image"] = "rbxassetid://10723357790",
-    ["file-input"] = "rbxassetid://10723357933",
-    ["file-json"] = "rbxassetid://10723364435",
-    ["file-json-2"] = "rbxassetid://10723364361",
-    ["file-key"] = "rbxassetid://10723364605",
-    ["file-key-2"] = "rbxassetid://10723364515",
-    ["file-line-chart"] = "rbxassetid://10723364725",
-    ["file-lock"] = "rbxassetid://10723364957",
-    ["file-lock-2"] = "rbxassetid://10723364861",
-    ["file-minus"] = "rbxassetid://10723365254",
-    ["file-minus-2"] = "rbxassetid://10723365086",
-    ["file-output"] = "rbxassetid://10723365457",
-    ["file-pie-chart"] = "rbxassetid://10723365598",
-    ["file-plus"] = "rbxassetid://10723365877",
-    ["file-plus-2"] = "rbxassetid://10723365766",
-    ["file-question"] = "rbxassetid://10723365987",
-    ["file-scan"] = "rbxassetid://10723366167",
-    ["file-search"] = "rbxassetid://10723366550",
-    ["file-search-2"] = "rbxassetid://10723366340",
-    ["file-signature"] = "rbxassetid://10723366741",
-    ["file-spreadsheet"] = "rbxassetid://10723366962",
-    ["file-symlink"] = "rbxassetid://10723367098",
-    ["file-terminal"] = "rbxassetid://10723367244",
-    ["file-text"] = "rbxassetid://10723367380",
-    ["file-type"] = "rbxassetid://10723367606",
-    ["file-type-2"] = "rbxassetid://10723367509",
-    ["file-up"] = "rbxassetid://10723367734",
-    ["file-video"] = "rbxassetid://10723373884",
-    ["file-video-2"] = "rbxassetid://10723367834",
-    ["file-volume"] = "rbxassetid://10723374172",
-    ["file-volume-2"] = "rbxassetid://10723374030",
-    ["file-warning"] = "rbxassetid://10723374276",
-    ["file-x"] = "rbxassetid://10723374544",
-    ["file-x-2"] = "rbxassetid://10723374378",
-    ["files"] = "rbxassetid://10723374759",
-    ["film"] = "rbxassetid://10723374981",
-    ["filter"] = "rbxassetid://10723375128",
-    ["fingerprint"] = "rbxassetid://10723375250",
-    ["flag"] = "rbxassetid://10723375890",
-    ["flag-off"] = "rbxassetid://10723375443",
-    ["flag-triangle-left"] = "rbxassetid://10723375608",
-    ["flag-triangle-right"] = "rbxassetid://10723375727",
-    ["flame"] = "rbxassetid://10723376114",
-    ["flashlight"] = "rbxassetid://10723376471",
-    ["flashlight-off"] = "rbxassetid://10723376365",
-    ["flask-conical"] = "rbxassetid://10734883986",
-    ["flask-round"] = "rbxassetid://10723376614",
-    ["flip-horizontal"] = "rbxassetid://10723376884",
-    ["flip-horizontal-2"] = "rbxassetid://10723376745",
-    ["flip-vertical"] = "rbxassetid://10723377138",
-    ["flip-vertical-2"] = "rbxassetid://10723377026",
-    ["flower"] = "rbxassetid://10747830374",
-    ["flower-2"] = "rbxassetid://10723377305",
-    ["focus"] = "rbxassetid://10723377537",
-    ["folder"] = "rbxassetid://10723387563",
-    ["folder-archive"] = "rbxassetid://10723384478",
-    ["folder-check"] = "rbxassetid://10723384605",
-    ["folder-clock"] = "rbxassetid://10723384731",
-    ["folder-closed"] = "rbxassetid://10723384893",
-    ["folder-cog"] = "rbxassetid://10723385213",
-    ["folder-cog-2"] = "rbxassetid://10723385036",
-    ["folder-down"] = "rbxassetid://10723385338",
-    ["folder-edit"] = "rbxassetid://10723385445",
-    ["folder-heart"] = "rbxassetid://10723385545",
-    ["folder-input"] = "rbxassetid://10723385721",
-    ["folder-key"] = "rbxassetid://10723385848",
-    ["folder-lock"] = "rbxassetid://10723386005",
-    ["folder-minus"] = "rbxassetid://10723386127",
-    ["folder-open"] = "rbxassetid://10723386277",
-    ["folder-output"] = "rbxassetid://10723386386",
-    ["folder-plus"] = "rbxassetid://10723386531",
-    ["folder-search"] = "rbxassetid://10723386787",
-    ["folder-search-2"] = "rbxassetid://10723386674",
-    ["folder-symlink"] = "rbxassetid://10723386930",
-    ["folder-tree"] = "rbxassetid://10723387085",
-    ["folder-up"] = "rbxassetid://10723387265",
-    ["folder-x"] = "rbxassetid://10723387448",
-    ["folders"] = "rbxassetid://10723387721",
-    ["form-input"] = "rbxassetid://10723387841",
-    ["forward"] = "rbxassetid://10723388016",
-    ["frame"] = "rbxassetid://10723394389",
-    ["framer"] = "rbxassetid://10723394565",
-    ["frown"] = "rbxassetid://10723394681",
-    ["fuel"] = "rbxassetid://10723394846",
-    ["function-square"] = "rbxassetid://10723395041",
-    ["gamepad"] = "rbxassetid://10723395457",
-    ["gamepad-2"] = "rbxassetid://10723395215",
-    ["gauge"] = "rbxassetid://10723395708",
-    ["gavel"] = "rbxassetid://10723395896",
-    ["gem"] = "rbxassetid://10723396000",
-    ["ghost"] = "rbxassetid://10723396107",
-    ["gift"] = "rbxassetid://10723396402",
-    ["gift-card"] = "rbxassetid://10723396225",
-    ["git-branch"] = "rbxassetid://10723396676",
-    ["git-branch-plus"] = "rbxassetid://10723396542",
-    ["git-commit"] = "rbxassetid://10723396812",
-    ["git-compare"] = "rbxassetid://10723396954",
-    ["git-fork"] = "rbxassetid://10723397049",
-    ["git-merge"] = "rbxassetid://10723397165",
-    ["git-pull-request"] = "rbxassetid://10723397431",
-    ["git-pull-request-closed"] = "rbxassetid://10723397268",
-    ["git-pull-request-draft"] = "rbxassetid://10734884302",
-    ["glass"] = "rbxassetid://10723397788",
-    ["glass-2"] = "rbxassetid://10723397529",
-    ["glass-water"] = "rbxassetid://10723397678",
-    ["glasses"] = "rbxassetid://10723397895",
-    ["globe"] = "rbxassetid://10723404337",
-    ["globe-2"] = "rbxassetid://10723398002",
-    ["grab"] = "rbxassetid://10723404472",
-    ["graduation-cap"] = "rbxassetid://10723404691",
-    ["grape"] = "rbxassetid://10723404822",
-    ["grid"] = "rbxassetid://10723404936",
-    ["grip-horizontal"] = "rbxassetid://10723405089",
-    ["grip-vertical"] = "rbxassetid://10723405236",
-    ["hammer"] = "rbxassetid://10723405360",
-    ["hand"] = "rbxassetid://10723405649",
-    ["hand-metal"] = "rbxassetid://10723405508",
-    ["hard-drive"] = "rbxassetid://10723405749",
-    ["hard-hat"] = "rbxassetid://10723405859",
-    ["hash"] = "rbxassetid://10723405975",
-    ["haze"] = "rbxassetid://10723406078",
-    ["headphones"] = "rbxassetid://10723406165",
-    ["heart"] = "rbxassetid://10723406885",
-    ["heart-crack"] = "rbxassetid://10723406299",
-    ["heart-handshake"] = "rbxassetid://10723406480",
-    ["heart-off"] = "rbxassetid://10723406662",
-    ["heart-pulse"] = "rbxassetid://10723406795",
-    ["help-circle"] = "rbxassetid://10723406988",
-    ["hexagon"] = "rbxassetid://10723407092",
-    ["highlighter"] = "rbxassetid://10723407192",
-    ["history"] = "rbxassetid://10723407335",
-    ["home"] = "rbxassetid://10723407389",
-    ["hourglass"] = "rbxassetid://10723407498",
-    ["ice-cream"] = "rbxassetid://10723414308",
-    ["image"] = "rbxassetid://10723415040",
-    ["image-minus"] = "rbxassetid://10723414487",
-    ["image-off"] = "rbxassetid://10723414677",
-    ["image-plus"] = "rbxassetid://10723414827",
-    ["import"] = "rbxassetid://10723415205",
-    ["inbox"] = "rbxassetid://10723415335",
-    ["indent"] = "rbxassetid://10723415494",
-    ["indian-rupee"] = "rbxassetid://10723415642",
-    ["infinity"] = "rbxassetid://10723415766",
-    ["info"] = "rbxassetid://10723415903",
-    ["inspect"] = "rbxassetid://10723416057",
-    ["italic"] = "rbxassetid://10723416195",
-    ["japanese-yen"] = "rbxassetid://10723416363",
-    ["joystick"] = "rbxassetid://10723416527",
-    ["key"] = "rbxassetid://10723416652",
-    ["keyboard"] = "rbxassetid://10723416765",
-    ["lamp"] = "rbxassetid://10723417513",
-    ["lamp-ceiling"] = "rbxassetid://10723416922",
-    ["lamp-desk"] = "rbxassetid://10723417016",
-    ["lamp-floor"] = "rbxassetid://10723417131",
-    ["lamp-wall-down"] = "rbxassetid://10723417240",
-    ["lamp-wall-up"] = "rbxassetid://10723417356",
-    ["landmark"] = "rbxassetid://10723417608",
-    ["languages"] = "rbxassetid://10723417703",
-    ["laptop"] = "rbxassetid://10723423881",
-    ["laptop-2"] = "rbxassetid://10723417797",
-    ["lasso"] = "rbxassetid://10723424235",
-    ["lasso-select"] = "rbxassetid://10723424058",
-    ["laugh"] = "rbxassetid://10723424372",
-    ["layers"] = "rbxassetid://10723424505",
-    ["layout"] = "rbxassetid://10723425376",
-    ["layout-dashboard"] = "rbxassetid://10723424646",
-    ["layout-grid"] = "rbxassetid://10723424838",
-    ["layout-list"] = "rbxassetid://10723424963",
-    ["layout-template"] = "rbxassetid://10723425187",
-    ["leaf"] = "rbxassetid://10723425539",
-    ["library"] = "rbxassetid://10723425615",
-    ["life-buoy"] = "rbxassetid://10723425685",
-    ["lightbulb"] = "rbxassetid://10723425852",
-    ["lightbulb-off"] = "rbxassetid://10723425762",
-    ["line-chart"] = "rbxassetid://10723426393",
-    ["link"] = "rbxassetid://10723426722",
-    ["link-2"] = "rbxassetid://10723426595",
-    ["link-2-off"] = "rbxassetid://10723426513",
-    ["list"] = "rbxassetid://10723433811",
-    ["list-checks"] = "rbxassetid://10734884548",
-    ["list-end"] = "rbxassetid://10723426886",
-    ["list-minus"] = "rbxassetid://10723426986",
-    ["list-music"] = "rbxassetid://10723427081",
-    ["list-ordered"] = "rbxassetid://10723427199",
-    ["list-plus"] = "rbxassetid://10723427334",
-    ["list-start"] = "rbxassetid://10723427494",
-    ["list-video"] = "rbxassetid://10723427619",
-    ["list-x"] = "rbxassetid://10723433655",
-    ["loader"] = "rbxassetid://10723434070",
-    ["loader-2"] = "rbxassetid://10723433935",
-    ["locate"] = "rbxassetid://10723434557",
-    ["locate-fixed"] = "rbxassetid://10723434236",
-    ["locate-off"] = "rbxassetid://10723434379",
-    ["lock"] = "rbxassetid://10723434711",
-    ["log-in"] = "rbxassetid://10723434830",
-    ["log-out"] = "rbxassetid://10723434906",
-    ["luggage"] = "rbxassetid://10723434993",
-    ["magnet"] = "rbxassetid://10723435069",
-    ["mail"] = "rbxassetid://10734885430",
-    ["mail-check"] = "rbxassetid://10723435182",
-    ["mail-minus"] = "rbxassetid://10723435261",
-    ["mail-open"] = "rbxassetid://10723435342",
-    ["mail-plus"] = "rbxassetid://10723435443",
-    ["mail-question"] = "rbxassetid://10723435515",
-    ["mail-search"] = "rbxassetid://10734884739",
-    ["mail-warning"] = "rbxassetid://10734885015",
-    ["mail-x"] = "rbxassetid://10734885247",
-    ["mails"] = "rbxassetid://10734885614",
-    ["map"] = "rbxassetid://10734886202",
-    ["map-pin"] = "rbxassetid://10734886004",
-    ["map-pin-off"] = "rbxassetid://10734885803",
-    ["maximize"] = "rbxassetid://10734886735",
-    ["maximize-2"] = "rbxassetid://10734886496",
-    ["medal"] = "rbxassetid://10734887072",
-    ["megaphone"] = "rbxassetid://10734887454",
-    ["megaphone-off"] = "rbxassetid://10734887311",
-    ["meh"] = "rbxassetid://10734887603",
-    ["menu"] = "rbxassetid://10734887784",
-    ["message-circle"] = "rbxassetid://10734888000",
-    ["message-square"] = "rbxassetid://10734888228",
-    ["mic"] = "rbxassetid://10734888864",
-    ["mic-2"] = "rbxassetid://10734888430",
-    ["mic-off"] = "rbxassetid://10734888646",
-    ["microscope"] = "rbxassetid://10734889106",
-    ["microwave"] = "rbxassetid://10734895076",
-    ["milestone"] = "rbxassetid://10734895310",
-    ["minimize"] = "rbxassetid://10734895698",
-    ["minimize-2"] = "rbxassetid://10734895530",
-    ["minus"] = "rbxassetid://10734896206",
-    ["minus-circle"] = "rbxassetid://10734895856",
-    ["minus-square"] = "rbxassetid://10734896029",
-    ["monitor"] = "rbxassetid://10734896881",
-    ["monitor-off"] = "rbxassetid://10734896360",
-    ["monitor-speaker"] = "rbxassetid://10734896512",
-    ["moon"] = "rbxassetid://10734897102",
-    ["more-horizontal"] = "rbxassetid://10734897250",
-    ["more-vertical"] = "rbxassetid://10734897387",
-    ["mountain"] = "rbxassetid://10734897956",
-    ["mountain-snow"] = "rbxassetid://10734897665",
-    ["mouse"] = "rbxassetid://10734898592",
-    ["mouse-pointer"] = "rbxassetid://10734898476",
-    ["mouse-pointer-2"] = "rbxassetid://10734898194",
-    ["mouse-pointer-click"] = "rbxassetid://10734898355",
-    ["move"] = "rbxassetid://10734900011",
-    ["move-3d"] = "rbxassetid://10734898756",
-    ["move-diagonal"] = "rbxassetid://10734899164",
-    ["move-diagonal-2"] = "rbxassetid://10734898934",
-    ["move-horizontal"] = "rbxassetid://10734899414",
-    ["move-vertical"] = "rbxassetid://10734899821",
-    ["music"] = "rbxassetid://10734905958",
-    ["music-2"] = "rbxassetid://10734900215",
-    ["music-3"] = "rbxassetid://10734905665",
-    ["music-4"] = "rbxassetid://10734905823",
-    ["navigation"] = "rbxassetid://10734906744",
-    ["navigation-2"] = "rbxassetid://10734906332",
-    ["navigation-2-off"] = "rbxassetid://10734906144",
-    ["navigation-off"] = "rbxassetid://10734906580",
-    ["network"] = "rbxassetid://10734906975",
-    ["newspaper"] = "rbxassetid://10734907168",
-    ["octagon"] = "rbxassetid://10734907361",
-    ["option"] = "rbxassetid://10734907649",
-    ["outdent"] = "rbxassetid://10734907933",
-    ["package"] = "rbxassetid://10734909540",
-    ["package-2"] = "rbxassetid://10734908151",
-    ["package-check"] = "rbxassetid://10734908384",
-    ["package-minus"] = "rbxassetid://10734908626",
-    ["package-open"] = "rbxassetid://10734908793",
-    ["package-plus"] = "rbxassetid://10734909016",
-    ["package-search"] = "rbxassetid://10734909196",
-    ["package-x"] = "rbxassetid://10734909375",
-    ["paint-bucket"] = "rbxassetid://10734909847",
-    ["paintbrush"] = "rbxassetid://10734910187",
-    ["paintbrush-2"] = "rbxassetid://10734910030",
-    ["palette"] = "rbxassetid://10734910430",
-    ["palmtree"] = "rbxassetid://10734910680",
-    ["paperclip"] = "rbxassetid://10734910927",
-    ["party-popper"] = "rbxassetid://10734918735",
-    ["pause"] = "rbxassetid://10734919336",
-    ["pause-circle"] = "rbxassetid://10735024209",
-    ["pause-octagon"] = "rbxassetid://10734919143",
-    ["pen-tool"] = "rbxassetid://10734919503",
-    ["pencil"] = "rbxassetid://10734919691",
-    ["percent"] = "rbxassetid://10734919919",
-    ["person-standing"] = "rbxassetid://10734920149",
-    ["phone"] = "rbxassetid://10734921524",
-    ["phone-call"] = "rbxassetid://10734920305",
-    ["phone-forwarded"] = "rbxassetid://10734920508",
-    ["phone-incoming"] = "rbxassetid://10734920694",
-    ["phone-missed"] = "rbxassetid://10734920845",
-    ["phone-off"] = "rbxassetid://10734921077",
-    ["phone-outgoing"] = "rbxassetid://10734921288",
-    ["pie-chart"] = "rbxassetid://10734921727",
-    ["piggy-bank"] = "rbxassetid://10734921935",
-    ["pin"] = "rbxassetid://10734922324",
-    ["pin-off"] = "rbxassetid://10734922180",
-    ["pipette"] = "rbxassetid://10734922497",
-    ["pizza"] = "rbxassetid://10734922774",
-    ["plane"] = "rbxassetid://10734922971",
-    ["play"] = "rbxassetid://10734923549",
-    ["play-circle"] = "rbxassetid://10734923214",
-    ["plus"] = "rbxassetid://10734924532",
-    ["plus-circle"] = "rbxassetid://10734923868",
-    ["plus-square"] = "rbxassetid://10734924219",
-    ["podcast"] = "rbxassetid://10734929553",
-    ["pointer"] = "rbxassetid://10734929723",
-    ["pound-sterling"] = "rbxassetid://10734929981",
-    ["power"] = "rbxassetid://10734930466",
-    ["power-off"] = "rbxassetid://10734930257",
-    ["printer"] = "rbxassetid://10734930632",
-    ["puzzle"] = "rbxassetid://10734930886",
-    ["quote"] = "rbxassetid://10734931234",
-    ["radio"] = "rbxassetid://10734931596",
-    ["radio-receiver"] = "rbxassetid://10734931402",
-    ["rectangle-horizontal"] = "rbxassetid://10734931777",
-    ["rectangle-vertical"] = "rbxassetid://10734932081",
-    ["recycle"] = "rbxassetid://10734932295",
-    ["redo"] = "rbxassetid://10734932822",
-    ["redo-2"] = "rbxassetid://10734932586",
-    ["refresh-ccw"] = "rbxassetid://10734933056",
-    ["refresh-cw"] = "rbxassetid://10734933222",
-    ["refrigerator"] = "rbxassetid://10734933465",
-    ["regex"] = "rbxassetid://10734933655",
-    ["repeat"] = "rbxassetid://10734933966",
-    ["repeat-1"] = "rbxassetid://10734933826",
-    ["reply"] = "rbxassetid://10734934252",
-    ["reply-all"] = "rbxassetid://10734934132",
-    ["rewind"] = "rbxassetid://10734934347",
-    ["rocket"] = "rbxassetid://10734934585",
-    ["rocking-chair"] = "rbxassetid://10734939942",
-    ["rotate-3d"] = "rbxassetid://10734940107",
-    ["rotate-ccw"] = "rbxassetid://10734940376",
-    ["rotate-cw"] = "rbxassetid://10734940654",
-    ["rss"] = "rbxassetid://10734940825",
-    ["ruler"] = "rbxassetid://10734941018",
-    ["russian-ruble"] = "rbxassetid://10734941199",
-    ["sailboat"] = "rbxassetid://10734941354",
-    ["save"] = "rbxassetid://10734941499",
-    ["scale"] = "rbxassetid://10734941912",
-    ["scale-3d"] = "rbxassetid://10734941739",
-    ["scaling"] = "rbxassetid://10734942072",
-    ["scan"] = "rbxassetid://10734942565",
-    ["scan-face"] = "rbxassetid://10734942198",
-    ["scan-line"] = "rbxassetid://10734942351",
-    ["scissors"] = "rbxassetid://10734942778",
-    ["screen-share"] = "rbxassetid://10734943193",
-    ["screen-share-off"] = "rbxassetid://10734942967",
-    ["scroll"] = "rbxassetid://10734943448",
-    ["search"] = "rbxassetid://10734943674",
-    ["send"] = "rbxassetid://10734943902",
-    ["separator-horizontal"] = "rbxassetid://10734944115",
-    ["separator-vertical"] = "rbxassetid://10734944326",
-    ["server"] = "rbxassetid://10734949856",
-    ["server-cog"] = "rbxassetid://10734944444",
-    ["server-crash"] = "rbxassetid://10734944554",
-    ["server-off"] = "rbxassetid://10734944668",
-    ["settings"] = "rbxassetid://10734950309",
-    ["settings-2"] = "rbxassetid://10734950020",
-    ["share"] = "rbxassetid://10734950813",
-    ["share-2"] = "rbxassetid://10734950553",
-    ["sheet"] = "rbxassetid://10734951038",
-    ["shield"] = "rbxassetid://10734951847",
-    ["shield-alert"] = "rbxassetid://10734951173",
-    ["shield-check"] = "rbxassetid://10734951367",
-    ["shield-close"] = "rbxassetid://10734951535",
-    ["shield-off"] = "rbxassetid://10734951684",
-    ["shirt"] = "rbxassetid://10734952036",
-    ["shopping-bag"] = "rbxassetid://10734952273",
-    ["shopping-cart"] = "rbxassetid://10734952479",
-    ["shovel"] = "rbxassetid://10734952773",
-    ["shower-head"] = "rbxassetid://10734952942",
-    ["shrink"] = "rbxassetid://10734953073",
-    ["shrub"] = "rbxassetid://10734953241",
-    ["shuffle"] = "rbxassetid://10734953451",
-    ["sidebar"] = "rbxassetid://10734954301",
-    ["sidebar-close"] = "rbxassetid://10734953715",
-    ["sidebar-open"] = "rbxassetid://10734954000",
-    ["sigma"] = "rbxassetid://10734954538",
-    ["signal"] = "rbxassetid://10734961133",
-    ["signal-high"] = "rbxassetid://10734954807",
-    ["signal-low"] = "rbxassetid://10734955080",
-    ["signal-medium"] = "rbxassetid://10734955336",
-    ["signal-zero"] = "rbxassetid://10734960878",
-    ["siren"] = "rbxassetid://10734961284",
-    ["skip-back"] = "rbxassetid://10734961526",
-    ["skip-forward"] = "rbxassetid://10734961809",
-    ["skull"] = "rbxassetid://10734962068",
-    ["slack"] = "rbxassetid://10734962339",
-    ["slash"] = "rbxassetid://10734962600",
-    ["slice"] = "rbxassetid://10734963024",
-    ["sliders"] = "rbxassetid://10734963400",
-    ["sliders-horizontal"] = "rbxassetid://10734963191",
-    ["smartphone"] = "rbxassetid://10734963940",
-    ["smartphone-charging"] = "rbxassetid://10734963671",
-    ["smile"] = "rbxassetid://10734964441",
-    ["smile-plus"] = "rbxassetid://10734964188",
-    ["snowflake"] = "rbxassetid://10734964600",
-    ["sofa"] = "rbxassetid://10734964852",
-    ["sort-asc"] = "rbxassetid://10734965115",
-    ["sort-desc"] = "rbxassetid://10734965287",
-    ["speaker"] = "rbxassetid://10734965419",
-    ["sprout"] = "rbxassetid://10734965572",
-    ["square"] = "rbxassetid://10734965702",
-    ["star"] = "rbxassetid://10734966248",
-    ["star-half"] = "rbxassetid://10734965897",
-    ["star-off"] = "rbxassetid://10734966097",
-    ["stethoscope"] = "rbxassetid://10734966384",
-    ["sticker"] = "rbxassetid://10734972234",
-    ["sticky-note"] = "rbxassetid://10734972463",
-    ["stop-circle"] = "rbxassetid://10734972621",
-    ["stretch-horizontal"] = "rbxassetid://10734972862",
-    ["stretch-vertical"] = "rbxassetid://10734973130",
-    ["strikethrough"] = "rbxassetid://10734973290",
-    ["subscript"] = "rbxassetid://10734973457",
-    ["sun"] = "rbxassetid://10734974297",
-    ["sun-dim"] = "rbxassetid://10734973645",
-    ["sun-medium"] = "rbxassetid://10734973778",
-    ["sun-moon"] = "rbxassetid://10734973999",
-    ["sun-snow"] = "rbxassetid://10734974130",
-    ["sunrise"] = "rbxassetid://10734974522",
-    ["sunset"] = "rbxassetid://10734974689",
-    ["superscript"] = "rbxassetid://10734974850",
-    ["swiss-franc"] = "rbxassetid://10734975024",
-    ["switch-camera"] = "rbxassetid://10734975214",
-    ["sword"] = "rbxassetid://10734975486",
-    ["swords"] = "rbxassetid://10734975692",
-    ["syringe"] = "rbxassetid://10734975932",
-    ["table"] = "rbxassetid://10734976230",
-    ["table-2"] = "rbxassetid://10734976097",
-    ["tablet"] = "rbxassetid://10734976394",
-    ["tag"] = "rbxassetid://10734976528",
-    ["tags"] = "rbxassetid://10734976739",
-    ["target"] = "rbxassetid://10734977012",
-    ["tent"] = "rbxassetid://10734981750",
-    ["terminal"] = "rbxassetid://10734982144",
-    ["terminal-square"] = "rbxassetid://10734981995",
-    ["text-cursor"] = "rbxassetid://10734982395",
-    ["text-cursor-input"] = "rbxassetid://10734982297",
-    ["thermometer"] = "rbxassetid://10734983134",
-    ["thermometer-snowflake"] = "rbxassetid://10734982571",
-    ["thermometer-sun"] = "rbxassetid://10734982771",
-    ["thumbs-down"] = "rbxassetid://10734983359",
-    ["thumbs-up"] = "rbxassetid://10734983629",
-    ["ticket"] = "rbxassetid://10734983868",
-    ["timer"] = "rbxassetid://10734984606",
-    ["timer-off"] = "rbxassetid://10734984138",
-    ["timer-reset"] = "rbxassetid://10734984355",
-    ["toggle-left"] = "rbxassetid://10734984834",
-    ["toggle-right"] = "rbxassetid://10734985040",
-    ["tornado"] = "rbxassetid://10734985247",
-    ["toy-brick"] = "rbxassetid://10747361919",
-    ["train"] = "rbxassetid://10747362105",
-    ["trash"] = "rbxassetid://10747362393",
-    ["trash-2"] = "rbxassetid://10747362241",
-    ["tree-deciduous"] = "rbxassetid://10747362534",
-    ["tree-pine"] = "rbxassetid://10747362748",
-    ["trees"] = "rbxassetid://10747363016",
-    ["trending-down"] = "rbxassetid://10747363205",
-    ["trending-up"] = "rbxassetid://10747363465",
-    ["triangle"] = "rbxassetid://10747363621",
-    ["trophy"] = "rbxassetid://10747363809",
-    ["truck"] = "rbxassetid://10747364031",
-    ["tv"] = "rbxassetid://10747364593",
-    ["tv-2"] = "rbxassetid://10747364302",
-    ["type"] = "rbxassetid://10747364761",
-    ["umbrella"] = "rbxassetid://10747364971",
-    ["underline"] = "rbxassetid://10747365191",
-    ["undo"] = "rbxassetid://10747365484",
-    ["undo-2"] = "rbxassetid://10747365359",
-    ["unlink"] = "rbxassetid://10747365771",
-    ["unlink-2"] = "rbxassetid://10747397871",
-    ["unlock"] = "rbxassetid://10747366027",
-    ["upload"] = "rbxassetid://10747366434",
-    ["upload-cloud"] = "rbxassetid://10747366266",
-    ["usb"] = "rbxassetid://10747366606",
-    ["user"] = "rbxassetid://10747373176",
-    ["user-check"] = "rbxassetid://10747371901",
-    ["user-cog"] = "rbxassetid://10747372167",
-    ["user-minus"] = "rbxassetid://10747372346",
-    ["user-plus"] = "rbxassetid://10747372702",
-    ["user-x"] = "rbxassetid://10747372992",
-    ["users"] = "rbxassetid://10747373426",
-    ["utensils"] = "rbxassetid://10747373821",
-    ["utensils-crossed"] = "rbxassetid://10747373629",
-    ["venetian-mask"] = "rbxassetid://10747374003",
-    ["verified"] = "rbxassetid://10747374131",
-    ["vibrate"] = "rbxassetid://10747374489",
-    ["vibrate-off"] = "rbxassetid://10747374269",
-    ["video"] = "rbxassetid://10747374938",
-    ["video-off"] = "rbxassetid://10747374721",
-    ["view"] = "rbxassetid://10747375132",
-    ["voicemail"] = "rbxassetid://10747375281",
-    ["volume"] = "rbxassetid://10747376008",
-    ["volume-1"] = "rbxassetid://10747375450",
-    ["volume-2"] = "rbxassetid://10747375679",
-    ["volume-x"] = "rbxassetid://10747375880",
-    ["wallet"] = "rbxassetid://10747376205",
-    ["wand"] = "rbxassetid://10747376565",
-    ["wand-2"] = "rbxassetid://10747376349",
-    ["watch"] = "rbxassetid://10747376722",
-    ["waves"] = "rbxassetid://10747376931",
-    ["webcam"] = "rbxassetid://10747381992",
-    ["wifi"] = "rbxassetid://10747382504",
-    ["wifi-off"] = "rbxassetid://10747382268",
-    ["wind"] = "rbxassetid://10747382750",
-    ["wrap-text"] = "rbxassetid://10747383065",
-    ["wrench"] = "rbxassetid://10747383470",
-    ["x"] = "rbxassetid://10747384394",
-    ["x-circle"] = "rbxassetid://10747383819",
-    ["x-octagon"] = "rbxassetid://10747384037",
-    ["x-square"] = "rbxassetid://10747384217",
-    ["zoom-in"] = "rbxassetid://10747384552",
-    ["zoom-out"] = "rbxassetid://10747384679",
-    ["player"] = "rbxassetid://10747373176",
-    ["combat"] = "rbxassetid://10734975692",
-    ["teleport"] = "rbxassetid://10734886202",
-    ["shop"] = "rbxassetid://10734952479",
-}
+    local Icons = {
+        ["home"] = "rbxassetid://10723407389",
+        ["house"] = "rbxassetid://10723407389",
+        ["user"] = "rbxassetid://10747373176",
+        ["player"] = "rbxassetid://10747373176",
+        ["combat"] = "rbxassetid://10734975692",
+        ["swords"] = "rbxassetid://10734975692",
+        ["target"] = "rbxassetid://10734977012",
+        ["settings"] = "rbxassetid://10734950309",
+        ["cog"] = "rbxassetid://10709810948",
+        ["shield"] = "rbxassetid://10709813000",
+        ["search"] = "rbxassetid://10709810841",
+        ["menu"] = "rbxassetid://10709804006"
+    }
 
     -- WindowObj defined above
 
@@ -1431,12 +815,12 @@ function EmperUI:CreateWindow(options)
 
         local TabBtn = Instance.new("TextButton")
         TabBtn.Parent = TabContainer
-        TabBtn.BackgroundColor3 = Theme.ElementBg
+        WindowObj:ApplyTheme(TabBtn, "BackgroundColor3", "ElementBg")
         TabBtn.BackgroundTransparency = 1
         TabBtn.Size = UDim2.new(1, 0, 0, 36)
         TabBtn.Font = Enum.Font.GothamMedium
         TabBtn.Text = actualIcon and ("            " .. tabName) or ("       " .. tabName)
-        TabBtn.TextColor3 = Theme.TextMuted
+        WindowObj:ApplyTheme(TabBtn, "TextColor3", "TextMuted")
         TabBtn.TextSize = 13
         TabBtn.TextXAlignment = Enum.TextXAlignment.Left
         TabBtn.AutoButtonColor = false
@@ -1453,7 +837,7 @@ function EmperUI:CreateWindow(options)
             TabIcon.Position = UDim2.new(0, 12, 0.5, -8)
             TabIcon.Size = UDim2.new(0, 16, 0, 16)
             TabIcon.Image = actualIcon
-            TabIcon.ImageColor3 = Theme.TextMuted
+            WindowObj:ApplyTheme(TabIcon, "ImageColor3", "TextMuted")
         end
 
         local Page = Instance.new("ScrollingFrame")
@@ -1461,7 +845,7 @@ function EmperUI:CreateWindow(options)
         Page.BackgroundTransparency = 1
         Page.Size = UDim2.new(1, 0, 1, 0)
         Page.ScrollBarThickness = 2
-        Page.ScrollBarImageColor3 = Theme.Border
+        WindowObj:ApplyTheme(Page, "ScrollBarImageColor3", "Border")
         Page.Visible = false
         Page.BorderSizePixel = 0
 
@@ -1493,13 +877,13 @@ function EmperUI:CreateWindow(options)
         local Divider = Instance.new("Frame")
         Divider.Name = "Divider"
         Divider.Parent = Page
-        Divider.BackgroundColor3 = Theme.Border
+        WindowObj:ApplyTheme(Divider, "BackgroundColor3", "Border")
         Divider.BorderSizePixel = 0
         Divider.Position = UDim2.new(0.5, -1, 0, 16)
         Divider.Size = UDim2.new(0, 2, 0, 0)
         
         local tabIndex = #WindowObj.Tabs + 1
-        local indicatorY = 12 + (tabIndex - 1) * 40 + 10
+        local indicatorY = 124 + (tabIndex - 1) * 40 + 10
         local tabData = {Button = TabBtn, Page = Page, IndicatorY = indicatorY, Icon = TabIcon, Selected = false}
 
         local function UpdateCanvas()
@@ -1531,39 +915,39 @@ function EmperUI:CreateWindow(options)
             for _, tb in pairs(WindowObj.Tabs) do
                 tb.Selected = false
                 tb.Page.Visible = false
-                TweenService:Create(tb.Button, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundTransparency = 1, TextColor3 = Theme.TextMuted}):Play()
+                TweenService:Create(tb.Button, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 1, TextColor3 = Theme.TextMuted}):Play()
                 if tb.Icon then
-                    TweenService:Create(tb.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageColor3 = Theme.TextMuted}):Play()
+                    TweenService:Create(tb.Icon, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = Theme.TextMuted}):Play()
                 end
             end
             
             tabData.Selected = true
             Page.Visible = true
-            Page.Position = UDim2.new(0, 0, 0, 15)
-            TweenService:Create(Page, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
-            TweenService:Create(TabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundTransparency = 0, TextColor3 = Theme.Accent}):Play()
+            Page.Position = UDim2.new(0, 0, 0, 25)
+            TweenService:Create(Page, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+            TweenService:Create(TabBtn, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 0, TextColor3 = Theme.Accent}):Play()
             
             GlobalIndicator.BackgroundTransparency = 0
-            TweenService:Create(GlobalIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+            TweenService:Create(GlobalIndicator, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
                 Position = UDim2.new(0, 12, 0, tabData.IndicatorY)
             }):Play()
             
             if TabIcon then
-                TweenService:Create(TabIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageColor3 = Theme.Accent}):Play()
+                TweenService:Create(TabIcon, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = Theme.Accent}):Play()
             end
         end)
 
         TabBtn.MouseEnter:Connect(function()
             if not tabData.Selected then
-                TweenService:Create(TabBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextColor3 = Theme.Text}):Play()
-                if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Theme.Text}):Play() end
+                TweenService:Create(TabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextColor3 = Theme.Text}):Play()
+                if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = Theme.Text}):Play() end
             end
         end)
 
         TabBtn.MouseLeave:Connect(function()
             if not tabData.Selected then
-                TweenService:Create(TabBtn, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {TextColor3 = Theme.TextMuted}):Play()
-                if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {ImageColor3 = Theme.TextMuted}):Play() end
+                TweenService:Create(TabBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextColor3 = Theme.TextMuted}):Play()
+                if TabIcon then TweenService:Create(TabIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = Theme.TextMuted}):Play() end
             end
         end)
 
@@ -1591,7 +975,7 @@ function EmperUI:CreateWindow(options)
                 
                 local BtnFrame = Instance.new("Frame")
                 BtnFrame.Parent = ParentCol
-                BtnFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(BtnFrame, "BackgroundColor3", "ElementBg")
                 BtnFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 BtnFrame.BorderSizePixel = 0
 
@@ -1600,31 +984,39 @@ function EmperUI:CreateWindow(options)
                 BtnCorner.Parent = BtnFrame
 
                 local BtnStroke = Instance.new("UIStroke")
-                BtnStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(BtnStroke, "Color", "Border")
                 BtnStroke.Thickness = 1
                 BtnStroke.Parent = BtnFrame
 
-                local Btn = Instance.new("TextButton")
-                Btn.Parent = BtnFrame
-                Btn.BackgroundTransparency = 1
-                Btn.Size = descText and UDim2.new(1, 0, 0, 24) or UDim2.new(1, 0, 1, 0)
-                Btn.Position = descText and UDim2.new(0, 0, 0, 8) or UDim2.new(0, 0, 0, 0)
-                Btn.Font = Enum.Font.GothamMedium
-                Btn.Text = "    " .. btnText
-                Btn.TextColor3 = Theme.Text
-                Btn.TextSize = 13
-                Btn.TextXAlignment = Enum.TextXAlignment.Left
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = BtnFrame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Size = descText and UDim2.new(1, 0, 0, 24) or UDim2.new(1, 0, 1, 0)
+                TitleLabel.Position = descText and UDim2.new(0, 0, 0, 8) or UDim2.new(0, 0, 0, 0)
+                TitleLabel.Font = Enum.Font.GothamMedium
+                TitleLabel.Text = "    " .. btnText
+                WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
+                TitleLabel.TextSize = 15
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                
+                local Hitbox = Instance.new("TextButton")
+                Hitbox.Parent = BtnFrame
+                Hitbox.BackgroundTransparency = 1
+                Hitbox.Size = UDim2.new(1, 0, 1, 0)
+                Hitbox.Position = UDim2.new(0, 0, 0, 0)
+                Hitbox.Text = ""
+                Hitbox.ZIndex = 5
                 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = BtnFrame
                     DescLabel.BackgroundTransparency = 1
-                    DescLabel.Size = UDim2.new(1, -30, 0, 14)
+                    DescLabel.Size = UDim2.new(1, -30, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
                     DescLabel.Font = Enum.Font.Gotham
                     DescLabel.Text = descText
-                    DescLabel.TextColor3 = Theme.TextMuted
-                    DescLabel.TextSize = 11
+                    WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
+                    DescLabel.TextSize = 13
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -1635,24 +1027,24 @@ function EmperUI:CreateWindow(options)
                 ClickIcon.Position = UDim2.new(1, -30, 0.5, -9)
                 ClickIcon.Size = UDim2.new(0, 18, 0, 18)
                 ClickIcon.Image = "rbxassetid://11681605335" 
-                ClickIcon.ImageColor3 = Theme.TextMuted
+                WindowObj:ApplyTheme(ClickIcon, "ImageColor3", "TextMuted")
 
-                Btn.MouseEnter:Connect(function()
+                Hitbox.MouseEnter:Connect(function()
                     TweenService:Create(BtnFrame, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {BackgroundColor3 = Theme.ElementHover}):Play()
                     TweenService:Create(BtnStroke, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {Color = Theme.Accent}):Play()
                     TweenService:Create(ClickIcon, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {ImageColor3 = Theme.Accent, Position = UDim2.new(1, -26, 0.5, -9)}):Play()
                 end)
                 
-                Btn.MouseLeave:Connect(function()
+                Hitbox.MouseLeave:Connect(function()
                     TweenService:Create(BtnFrame, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {BackgroundColor3 = Theme.ElementBg}):Play()
                     TweenService:Create(BtnStroke, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {Color = Theme.Border}):Play()
                     TweenService:Create(ClickIcon, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {ImageColor3 = Theme.TextMuted, Position = UDim2.new(1, -30, 0.5, -9)}):Play()
                 end)
 
-                Btn.MouseButton1Click:Connect(function()
+                Hitbox.MouseButton1Click:Connect(function()
                     local ripple = Instance.new("Frame")
                     ripple.Parent = BtnFrame
-                    ripple.BackgroundColor3 = Theme.Accent
+                    WindowObj:ApplyTheme(ripple, "BackgroundColor3", "Accent")
                     ripple.BackgroundTransparency = 0.8
                     ripple.BorderSizePixel = 0
                     ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -1693,7 +1085,7 @@ function EmperUI:CreateWindow(options)
                 
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Parent = ParentCol
-                ToggleFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(ToggleFrame, "BackgroundColor3", "ElementBg")
                 ToggleFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 ToggleFrame.BorderSizePixel = 0
 
@@ -1702,7 +1094,7 @@ function EmperUI:CreateWindow(options)
                 TgCorner.Parent = ToggleFrame
 
                 local TgStroke = Instance.new("UIStroke")
-                TgStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(TgStroke, "Color", "Border")
                 TgStroke.Thickness = 1
                 TgStroke.Parent = ToggleFrame
 
@@ -1713,20 +1105,20 @@ function EmperUI:CreateWindow(options)
                 Label.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = toggleText
-                Label.TextColor3 = Theme.Text
-                Label.TextSize = 13
+                WindowObj:ApplyTheme(Label, "TextColor3", "Text")
+                Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = ToggleFrame
                     DescLabel.BackgroundTransparency = 1
-                    DescLabel.Size = UDim2.new(1, -60, 0, 14)
+                    DescLabel.Size = UDim2.new(1, -60, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
                     DescLabel.Font = Enum.Font.Gotham
                     DescLabel.Text = descText
-                    DescLabel.TextColor3 = Theme.TextMuted
-                    DescLabel.TextSize = 11
+                    WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
+                    DescLabel.TextSize = 13
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -1836,7 +1228,7 @@ function EmperUI:CreateWindow(options)
                 
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Parent = ParentCol
-                SliderFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(SliderFrame, "BackgroundColor3", "ElementBg")
                 SliderFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 SliderFrame.BorderSizePixel = 0
 
@@ -1845,7 +1237,7 @@ function EmperUI:CreateWindow(options)
                 SlCorner.Parent = SliderFrame
 
                 local SlStroke = Instance.new("UIStroke")
-                SlStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(SlStroke, "Color", "Border")
                 SlStroke.Thickness = 1
                 SlStroke.Parent = SliderFrame
 
@@ -1856,8 +1248,8 @@ function EmperUI:CreateWindow(options)
                 Label.Position = UDim2.new(0, 16, 0, 4)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = sliderText
-                Label.TextColor3 = Theme.Text
-                Label.TextSize = 13
+                WindowObj:ApplyTheme(Label, "TextColor3", "Text")
+                Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
 
                 local ValLabel = Instance.new("TextLabel")
@@ -1867,8 +1259,8 @@ function EmperUI:CreateWindow(options)
                 ValLabel.Position = UDim2.new(1, -96, 0, 4)
                 ValLabel.Font = Enum.Font.GothamBold
                 ValLabel.Text = tostring(Value)
-                ValLabel.TextColor3 = Theme.Accent
-                ValLabel.TextSize = 13
+                WindowObj:ApplyTheme(ValLabel, "TextColor3", "Accent")
+                ValLabel.TextSize = 15
                 ValLabel.TextXAlignment = Enum.TextXAlignment.Right
 
                 local Track = Instance.new("TextButton")
@@ -1882,12 +1274,12 @@ function EmperUI:CreateWindow(options)
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = SliderFrame
                     DescLabel.BackgroundTransparency = 1
-                    DescLabel.Size = UDim2.new(1, -100, 0, 14)
+                    DescLabel.Size = UDim2.new(1, -100, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 22)
                     DescLabel.Font = Enum.Font.Gotham
                     DescLabel.Text = descText
-                    DescLabel.TextColor3 = Theme.TextMuted
-                    DescLabel.TextSize = 11
+                    WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
+                    DescLabel.TextSize = 13
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -1908,7 +1300,7 @@ function EmperUI:CreateWindow(options)
 
                 local Fill = Instance.new("Frame")
                 Fill.Parent = Track
-                Fill.BackgroundColor3 = Theme.Accent
+                WindowObj:ApplyTheme(Fill, "BackgroundColor3", "Accent")
                 Fill.Size = UDim2.new((Value - min) / (max - min), 0, 1, 0)
                 Fill.BorderSizePixel = 0
 
@@ -2024,7 +1416,7 @@ function EmperUI:CreateWindow(options)
                 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
-                DropdownFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(DropdownFrame, "BackgroundColor3", "ElementBg")
                 DropdownFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
@@ -2034,7 +1426,7 @@ function EmperUI:CreateWindow(options)
                 DpCorner.Parent = DropdownFrame
 
                 local DpStroke = Instance.new("UIStroke")
-                DpStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(DpStroke, "Color", "Border")
                 DpStroke.Thickness = 1
                 DpStroke.Parent = DropdownFrame
 
@@ -2052,8 +1444,8 @@ function EmperUI:CreateWindow(options)
                 Label.Position = UDim2.new(0, 16, 0, 0)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = dropdownText
-                Label.TextColor3 = Theme.Text
-                Label.TextSize = 13
+                WindowObj:ApplyTheme(Label, "TextColor3", "Text")
+                Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -2064,8 +1456,8 @@ function EmperUI:CreateWindow(options)
                 SelLabel.Position = descText and UDim2.new(0.5, 8, 0, 8) or UDim2.new(0.5, 8, 0, 0)
                 SelLabel.Font = Enum.Font.GothamBold
                 SelLabel.Text = tostring(CurrentOption)
-                SelLabel.TextColor3 = Theme.Accent
-                SelLabel.TextSize = 13
+                WindowObj:ApplyTheme(SelLabel, "TextColor3", "Accent")
+                SelLabel.TextSize = 15
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -2075,7 +1467,7 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Position = descText and UDim2.new(1, -30, 0, 19) or UDim2.new(1, -30, 0, 12)
                 ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
-                ArrowIcon.ImageColor3 = Theme.TextMuted
+                WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
 
                 local OptionContainer = Instance.new("Frame")
                 OptionContainer.Name = "OptionContainer"
@@ -2111,7 +1503,7 @@ function EmperUI:CreateWindow(options)
                 local function CreateOptionButton(optName)
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Parent = OptionContainer
-                    OptBtn.BackgroundColor3 = Theme.ElementBg
+                    WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
                     OptBtn.Size = UDim2.new(1, 0, 0, 30)
                     OptBtn.Font = Enum.Font.GothamMedium
                     OptBtn.Text = "        " .. tostring(optName)
@@ -2125,7 +1517,7 @@ function EmperUI:CreateWindow(options)
                     OptCorner.Parent = OptBtn
 
                     local OptStroke = Instance.new("UIStroke")
-                    OptStroke.Color = Theme.Border
+                    WindowObj:ApplyTheme(OptStroke, "Color", "Border")
                     OptStroke.Thickness = 1
                     OptStroke.Parent = OptBtn
                     OptStroke.Enabled = (CurrentOption == optName)
@@ -2249,7 +1641,7 @@ function EmperUI:CreateWindow(options)
                 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
-                DropdownFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(DropdownFrame, "BackgroundColor3", "ElementBg")
                 DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
@@ -2259,7 +1651,7 @@ function EmperUI:CreateWindow(options)
                 DpCorner.Parent = DropdownFrame
 
                 local DpStroke = Instance.new("UIStroke")
-                DpStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(DpStroke, "Color", "Border")
                 DpStroke.Thickness = 1
                 DpStroke.Parent = DropdownFrame
 
@@ -2277,8 +1669,8 @@ function EmperUI:CreateWindow(options)
                 Label.Position = UDim2.new(0, 16, 0, 0)
                 Label.Font = Enum.Font.GothamMedium
                 Label.Text = dropdownText
-                Label.TextColor3 = Theme.Text
-                Label.TextSize = 13
+                WindowObj:ApplyTheme(Label, "TextColor3", "Text")
+                Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -2292,15 +1684,15 @@ function EmperUI:CreateWindow(options)
                 local function UpdateSelLabel()
                     if #CurrentOptions == 0 then
                         SelLabel.Text = "None"
-                        SelLabel.TextColor3 = Theme.TextMuted
+                        WindowObj:ApplyTheme(SelLabel, "TextColor3", "TextMuted")
                     else
                         SelLabel.Text = table.concat(CurrentOptions, ", ")
-                        SelLabel.TextColor3 = Theme.Accent
+                        WindowObj:ApplyTheme(SelLabel, "TextColor3", "Accent")
                     end
                 end
                 UpdateSelLabel()
                 
-                SelLabel.TextSize = 13
+                SelLabel.TextSize = 15
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
 
@@ -2310,7 +1702,7 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Position = UDim2.new(1, -30, 0, 12)
                 ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
-                ArrowIcon.ImageColor3 = Theme.TextMuted
+                WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
 
                 local OptionContainer = Instance.new("Frame")
                 OptionContainer.Name = "OptionContainer"
@@ -2348,7 +1740,7 @@ function EmperUI:CreateWindow(options)
                     
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Parent = OptionContainer
-                    OptBtn.BackgroundColor3 = Theme.ElementBg
+                    WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
                     OptBtn.Size = UDim2.new(1, 0, 0, 30)
                     OptBtn.Font = Enum.Font.GothamMedium
                     OptBtn.Text = "        " .. tostring(optName)
@@ -2362,7 +1754,7 @@ function EmperUI:CreateWindow(options)
                     OptCorner.Parent = OptBtn
 
                     local OptStroke = Instance.new("UIStroke")
-                    OptStroke.Color = Theme.Border
+                    WindowObj:ApplyTheme(OptStroke, "Color", "Border")
                     OptStroke.Thickness = 1
                     OptStroke.Parent = OptBtn
                     OptStroke.Enabled = isOptSelected
@@ -2480,7 +1872,7 @@ function EmperUI:CreateWindow(options)
                 
                 local TbFrame = Instance.new("Frame")
                 TbFrame.Parent = ParentCol
-                TbFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(TbFrame, "BackgroundColor3", "ElementBg")
                 TbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 TbFrame.BorderSizePixel = 0
 
@@ -2489,7 +1881,7 @@ function EmperUI:CreateWindow(options)
                 TbCorner.Parent = TbFrame
 
                 local TbStroke = Instance.new("UIStroke")
-                TbStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(TbStroke, "Color", "Border")
                 TbStroke.Thickness = 1
                 TbStroke.Parent = TbFrame
 
@@ -2501,20 +1893,20 @@ function EmperUI:CreateWindow(options)
                 TbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 TbLabel.Font = Enum.Font.GothamMedium
                 TbLabel.Text = tbText
-                TbLabel.TextColor3 = Theme.Text
-                TbLabel.TextSize = 13
+                WindowObj:ApplyTheme(TbLabel, "TextColor3", "Text")
+                TbLabel.TextSize = 15
                 TbLabel.TextXAlignment = Enum.TextXAlignment.Left
 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = TbFrame
                     DescLabel.BackgroundTransparency = 1
-                    DescLabel.Size = UDim2.new(0.5, -16, 0, 14)
+                    DescLabel.Size = UDim2.new(0.5, -16, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
                     DescLabel.Font = Enum.Font.Gotham
                     DescLabel.Text = descText
-                    DescLabel.TextColor3 = Theme.TextMuted
-                    DescLabel.TextSize = 11
+                    WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
+                    DescLabel.TextSize = 13
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -2532,7 +1924,7 @@ function EmperUI:CreateWindow(options)
                 BgCorner.Parent = TextBoxBg
 
                 local BgStroke = Instance.new("UIStroke")
-                BgStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(BgStroke, "Color", "Border")
                 BgStroke.Thickness = 1
                 BgStroke.Parent = TextBoxBg
 
@@ -2543,8 +1935,8 @@ function EmperUI:CreateWindow(options)
                 TextBox.Font = Enum.Font.Gotham
                 TextBox.PlaceholderText = placeholder or ""
                 TextBox.Text = ""
-                TextBox.TextColor3 = Theme.Text
-                TextBox.PlaceholderColor3 = Theme.TextMuted
+                WindowObj:ApplyTheme(TextBox, "TextColor3", "Text")
+                WindowObj:ApplyTheme(TextBox, "PlaceholderColor3", "TextMuted")
                 TextBox.TextSize = 12
 
                 TextBox.Focused:Connect(function()
@@ -2601,7 +1993,7 @@ function EmperUI:CreateWindow(options)
                 
                 local KbFrame = Instance.new("Frame")
                 KbFrame.Parent = ParentCol
-                KbFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(KbFrame, "BackgroundColor3", "ElementBg")
                 KbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 KbFrame.BorderSizePixel = 0
 
@@ -2610,7 +2002,7 @@ function EmperUI:CreateWindow(options)
                 KbCorner.Parent = KbFrame
 
                 local KbStroke = Instance.new("UIStroke")
-                KbStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(KbStroke, "Color", "Border")
                 KbStroke.Thickness = 1
                 KbStroke.Parent = KbFrame
 
@@ -2621,20 +2013,20 @@ function EmperUI:CreateWindow(options)
                 KbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
                 KbLabel.Font = Enum.Font.GothamMedium
                 KbLabel.Text = kbText
-                KbLabel.TextColor3 = Theme.Text
-                KbLabel.TextSize = 13
+                WindowObj:ApplyTheme(KbLabel, "TextColor3", "Text")
+                KbLabel.TextSize = 15
                 KbLabel.TextXAlignment = Enum.TextXAlignment.Left
 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = KbFrame
                     DescLabel.BackgroundTransparency = 1
-                    DescLabel.Size = UDim2.new(0.5, -16, 0, 14)
+                    DescLabel.Size = UDim2.new(0.5, -16, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
                     DescLabel.Font = Enum.Font.Gotham
                     DescLabel.Text = descText
-                    DescLabel.TextColor3 = Theme.TextMuted
-                    DescLabel.TextSize = 11
+                    WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
+                    DescLabel.TextSize = 13
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -2652,7 +2044,7 @@ function EmperUI:CreateWindow(options)
                 BgCorner.Parent = BindBg
 
                 local BgStroke = Instance.new("UIStroke")
-                BgStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(BgStroke, "Color", "Border")
                 BgStroke.Thickness = 1
                 BgStroke.Parent = BindBg
 
@@ -2662,7 +2054,7 @@ function EmperUI:CreateWindow(options)
                 BindBtn.Size = UDim2.new(1, 0, 1, 0)
                 BindBtn.Font = Enum.Font.GothamMedium
                 BindBtn.Text = defaultKey.Name
-                BindBtn.TextColor3 = Theme.TextMuted
+                WindowObj:ApplyTheme(BindBtn, "TextColor3", "TextMuted")
                 BindBtn.TextSize = 12
 
                 local CurrentKey = defaultKey
@@ -2748,8 +2140,8 @@ function EmperUI:CreateWindow(options)
                 Lbl.Position = UDim2.new(0, 10, 0, 0)
                 Lbl.Font = Enum.Font.Gotham
                 Lbl.Text = labelText
-                Lbl.TextColor3 = Theme.TextMuted
-                Lbl.TextSize = 13
+                WindowObj:ApplyTheme(Lbl, "TextColor3", "TextMuted")
+                Lbl.TextSize = 15
                 Lbl.TextXAlignment = Enum.TextXAlignment.Left
                 Lbl.TextWrapped = true
                 
@@ -2769,7 +2161,7 @@ function EmperUI:CreateWindow(options)
                 
                 local Line = Instance.new("Frame")
                 Line.Parent = DivFrame
-                Line.BackgroundColor3 = Theme.Border
+                WindowObj:ApplyTheme(Line, "BackgroundColor3", "Border")
                 Line.BorderSizePixel = 0
                 Line.Size = UDim2.new(1, -20, 0, 1)
                 Line.Position = UDim2.new(0, 10, 0.5, 0)
@@ -2793,7 +2185,7 @@ function EmperUI:CreateWindow(options)
 
                 local CpFrame = Instance.new("Frame")
                 CpFrame.Parent = ParentCol
-                CpFrame.BackgroundColor3 = Theme.ElementBg
+                WindowObj:ApplyTheme(CpFrame, "BackgroundColor3", "ElementBg")
                 CpFrame.Size = UDim2.new(1, 0, 0, 42)
                 CpFrame.BorderSizePixel = 0
                 CpFrame.ClipsDescendants = true
@@ -2803,7 +2195,7 @@ function EmperUI:CreateWindow(options)
                 CpCorner.Parent = CpFrame
 
                 local CpStroke = Instance.new("UIStroke")
-                CpStroke.Color = Theme.Border
+                WindowObj:ApplyTheme(CpStroke, "Color", "Border")
                 CpStroke.Thickness = 1
                 CpStroke.Parent = CpFrame
 
@@ -2820,8 +2212,8 @@ function EmperUI:CreateWindow(options)
                 CpLabel.Size = UDim2.new(0.5, -20, 0, 42)
                 CpLabel.Font = Enum.Font.GothamMedium
                 CpLabel.Text = cpText
-                CpLabel.TextColor3 = Theme.Text
-                CpLabel.TextSize = 13
+                WindowObj:ApplyTheme(CpLabel, "TextColor3", "Text")
+                CpLabel.TextSize = 15
                 CpLabel.TextXAlignment = Enum.TextXAlignment.Left
 
                 local ColorDisplay = Instance.new("Frame")
@@ -2873,7 +2265,7 @@ function EmperUI:CreateWindow(options)
                     Lbl.Size = UDim2.new(0, 20, 1, 0)
                     Lbl.Font = Enum.Font.GothamMedium
                     Lbl.Text = name
-                    Lbl.TextColor3 = Theme.Text
+                    WindowObj:ApplyTheme(Lbl, "TextColor3", "Text")
                     Lbl.TextSize = 12
                     Lbl.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -3012,11 +2404,11 @@ function EmperUI:CreateWindow(options)
         if #WindowObj.Tabs == 1 then
             Page.Visible = true
             TabBtn.BackgroundTransparency = 0
-            TabBtn.TextColor3 = Theme.Accent
+            WindowObj:ApplyTheme(TabBtn, "TextColor3", "Accent")
             GlobalIndicator.BackgroundTransparency = 0
             GlobalIndicator.Position = UDim2.new(0, 12, 0, tabData.IndicatorY)
             if TabIcon then
-                TabIcon.ImageColor3 = Theme.Accent
+                WindowObj:ApplyTheme(TabIcon, "ImageColor3", "Accent")
             end
             tabData.Selected = true
         end
@@ -3042,46 +2434,8 @@ function EmperUI:CreateWindow(options)
     HeaderContainer.Size = UDim2.new(1, 0, 0, 390)
     HeaderContainer.Position = UDim2.new(0, 0, 0, 0)
 
-    -- === BANNER ===
-    local BannerBase = Instance.new("Frame")
-    BannerBase.Parent = HeaderContainer
-    BannerBase.Size = UDim2.new(1, 0, 0, 110)
-    BannerBase.Position = UDim2.new(0, 0, 0, 0)
-    BannerBase.BorderSizePixel = 0
-    BannerBase.BackgroundColor3 = Theme.Sidebar
-    BannerBase.ZIndex = 1
-
-    local Banner = Instance.new("Frame")
-    Banner.Parent = HeaderContainer
-    Banner.Size = UDim2.new(1, 0, 0, 110)
-    Banner.Position = UDim2.new(0, 0, 0, 0)
-    Banner.BorderSizePixel = 0
-    Banner.BackgroundColor3 = Theme.Accent
-    Banner.ZIndex = 2
-    Banner.BackgroundTransparency = 0.6
-
-    local BannerGrad = Instance.new("UIGradient")
-    BannerGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))
-    })
-    BannerGrad.Rotation = 90
-    BannerGrad.Parent = Banner
-
-    local BannerCorner = Instance.new("UICorner")
-    BannerCorner.CornerRadius = UDim.new(0, 6)
-    BannerCorner.Parent = Banner
-    local BaseCorner = Instance.new("UICorner")
-    BaseCorner.CornerRadius = UDim.new(0, 6)
-    BaseCorner.Parent = BannerBase
-
-    local BannerBottomPatch = Instance.new("Frame")
-    BannerBottomPatch.Parent = BannerBase
-    BannerBottomPatch.BackgroundColor3 = Theme.Sidebar
-    BannerBottomPatch.BorderSizePixel = 0
-    BannerBottomPatch.Position = UDim2.new(0, 0, 1, -6)
-    BannerBottomPatch.Size = UDim2.new(1, 0, 0, 6)
-    BannerBottomPatch.ZIndex = 1
+    -- === BANNER (REMOVED AS PER USER REQUEST) ===
+    -- Banner was removed to make it clean around the profile picture.
 
     -- === AVATAR ===
     local AvatarGlow = Instance.new("ImageLabel")
@@ -3090,13 +2444,13 @@ function EmperUI:CreateWindow(options)
     AvatarGlow.Position = UDim2.new(0.5, -60, 0, 40)
     AvatarGlow.Size = UDim2.new(0, 120, 0, 120)
     AvatarGlow.Image = "rbxassetid://13192853046"
-    AvatarGlow.ImageColor3 = Theme.Accent
+    WindowObj:ApplyTheme(AvatarGlow, "ImageColor3", "Accent")
     AvatarGlow.ImageTransparency = 0.4
     AvatarGlow.ZIndex = 4
 
     local ProfileAvatar = Instance.new("ImageLabel")
     ProfileAvatar.Parent = HeaderContainer
-    ProfileAvatar.BackgroundColor3 = Theme.ElementBg
+    WindowObj:ApplyTheme(ProfileAvatar, "BackgroundColor3", "ElementBg")
     ProfileAvatar.Position = UDim2.new(0.5, -45, 0, 55)
     ProfileAvatar.Size = UDim2.new(0, 90, 0, 90)
     ProfileAvatar.ScaleType = Enum.ScaleType.Crop
@@ -3109,7 +2463,7 @@ function EmperUI:CreateWindow(options)
 
     local AvatarBorder = Instance.new("UIStroke")
     AvatarBorder.Thickness = 3
-    AvatarBorder.Color = Theme.Accent
+    WindowObj:ApplyTheme(AvatarBorder, "Color", "Accent")
     AvatarBorder.Parent = ProfileAvatar
 
     -- === INFO SECTION ===
@@ -3126,7 +2480,7 @@ function EmperUI:CreateWindow(options)
     ProfileName.Size = UDim2.new(1, 0, 0, 28)
     ProfileName.Font = Enum.Font.GothamBold
     ProfileName.TextSize = 24
-    ProfileName.TextColor3 = Theme.Text
+    WindowObj:ApplyTheme(ProfileName, "TextColor3", "Text")
     ProfileName.Text = "Loading..."
     ProfileName.TextXAlignment = Enum.TextXAlignment.Center
 
@@ -3187,7 +2541,7 @@ function EmperUI:CreateWindow(options)
 
     local function MakeStatCard(label, value, iconId)
         local Card = Instance.new("Frame")
-        Card.BackgroundColor3 = Theme.ElementBg
+        WindowObj:ApplyTheme(Card, "BackgroundColor3", "ElementBg")
         Card.BorderSizePixel = 0
         Card.Parent = StatsFrame
 
@@ -3196,7 +2550,7 @@ function EmperUI:CreateWindow(options)
         CardCorner.Parent = Card
 
         local CardStroke = Instance.new("UIStroke")
-        CardStroke.Color = Theme.Accent
+        WindowObj:ApplyTheme(CardStroke, "Color", "Accent")
         CardStroke.Thickness = 1
         CardStroke.Transparency = 0.5
         CardStroke.Parent = Card
@@ -3207,7 +2561,7 @@ function EmperUI:CreateWindow(options)
         Icon.Position = UDim2.new(0, 8, 0, 10)
         Icon.Size = UDim2.new(0, 14, 0, 14)
         Icon.Image = iconId
-        Icon.ImageColor3 = Theme.Accent
+        WindowObj:ApplyTheme(Icon, "ImageColor3", "Accent")
         Icon.ImageTransparency = 0.2
 
         local ValLabel = Instance.new("TextLabel")
@@ -3216,8 +2570,8 @@ function EmperUI:CreateWindow(options)
         ValLabel.Position = UDim2.new(0, 26, 0, 7)
         ValLabel.Size = UDim2.new(1, -30, 0, 22)
         ValLabel.Font = Enum.Font.GothamBold
-        ValLabel.TextSize = 13
-        ValLabel.TextColor3 = Theme.Text
+        ValLabel.TextSize = 15
+        WindowObj:ApplyTheme(ValLabel, "TextColor3", "Text")
         ValLabel.Text = value
         ValLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -3228,7 +2582,7 @@ function EmperUI:CreateWindow(options)
         KeyLabel.Size = UDim2.new(1, -16, 0, 16)
         KeyLabel.Font = Enum.Font.Gotham
         KeyLabel.TextSize = 11
-        KeyLabel.TextColor3 = Theme.TextMuted
+        WindowObj:ApplyTheme(KeyLabel, "TextColor3", "TextMuted")
         KeyLabel.Text = label
         KeyLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -3292,7 +2646,7 @@ function EmperUI:CreateWindow(options)
 
         local DialogBox = Instance.new("Frame")
         DialogBox.Parent = Overlay
-        DialogBox.BackgroundColor3 = Theme.Background
+        WindowObj:ApplyTheme(DialogBox, "BackgroundColor3", "Background")
         DialogBox.Size = UDim2.new(0, 300, 0, 140)
         DialogBox.Position = UDim2.new(0.5, -150, 0.5, -70)
         DialogBox.ZIndex = 51
@@ -3303,7 +2657,7 @@ function EmperUI:CreateWindow(options)
         BoxCorner.Parent = DialogBox
         
         local BoxStroke = Instance.new("UIStroke")
-        BoxStroke.Color = Theme.Border
+        WindowObj:ApplyTheme(BoxStroke, "Color", "Border")
         BoxStroke.Thickness = 1
         BoxStroke.Parent = DialogBox
 
@@ -3313,7 +2667,7 @@ function EmperUI:CreateWindow(options)
         TitleLbl.Size = UDim2.new(1, 0, 0, 40)
         TitleLbl.Font = Enum.Font.GothamBold
         TitleLbl.Text = title
-        TitleLbl.TextColor3 = Theme.Text
+        WindowObj:ApplyTheme(TitleLbl, "TextColor3", "Text")
         TitleLbl.TextSize = 16
         TitleLbl.ZIndex = 52
 
@@ -3324,8 +2678,8 @@ function EmperUI:CreateWindow(options)
         MsgLbl.Size = UDim2.new(1, -40, 0, 40)
         MsgLbl.Font = Enum.Font.Gotham
         MsgLbl.Text = message
-        MsgLbl.TextColor3 = Theme.TextMuted
-        MsgLbl.TextSize = 13
+        WindowObj:ApplyTheme(MsgLbl, "TextColor3", "TextMuted")
+        MsgLbl.TextSize = 15
         MsgLbl.TextWrapped = true
         MsgLbl.ZIndex = 52
 
@@ -3345,11 +2699,11 @@ function EmperUI:CreateWindow(options)
         for _, opt in ipairs(options) do
             local Btn = Instance.new("TextButton")
             Btn.Parent = BtnContainer
-            Btn.BackgroundColor3 = Theme.ElementBg
+            WindowObj:ApplyTheme(Btn, "BackgroundColor3", "ElementBg")
             Btn.Size = UDim2.new(0, 80, 1, 0)
             Btn.Font = Enum.Font.GothamMedium
             Btn.Text = opt
-            Btn.TextColor3 = Theme.Text
+            WindowObj:ApplyTheme(Btn, "TextColor3", "Text")
             Btn.TextSize = 13
             Btn.ZIndex = 53
             
@@ -3358,7 +2712,7 @@ function EmperUI:CreateWindow(options)
             BtnCorner.Parent = Btn
 
             local BtnStroke = Instance.new("UIStroke")
-            BtnStroke.Color = Theme.Border
+            WindowObj:ApplyTheme(BtnStroke, "Color", "Border")
             BtnStroke.Thickness = 1
             BtnStroke.Parent = Btn
 
@@ -3440,25 +2794,36 @@ function EmperUI:CreateWindow(options)
         end
     end
 
-    function WindowObj:BuildSettingsSystem(Section, folderName)
+    function WindowObj:BuildSettingsSystem(ParentObj, folderName)
         folderName = folderName or "EmperHub"
         
-        Section:Label("Configuration System")
+        local ConfigSection, ThemeSection
+        if ParentObj.CreateSection then
+            -- It's a Tab, create separate columns
+            ConfigSection = ParentObj:CreateSection("Left")
+            ThemeSection = ParentObj:CreateSection("Right")
+        else
+            -- It's a Section, stack them
+            ConfigSection = ParentObj
+            ThemeSection = ParentObj
+        end
         
-        local ConfigNameBox = Section:TextBox({
+        ConfigSection:Label("Configuration System")
+        
+        local ConfigNameBox = ConfigSection:TextBox({
             Title = "Config Name",
             Placeholder = "ตั้งชื่อ Config ที่นี่...",
             Callback = function() end
         })
 
-        local ConfigDropdown = Section:Dropdown({
+        local ConfigDropdown = ConfigSection:Dropdown({
             Title = "Saved Configs",
             Values = WindowObj:GetConfigs(folderName),
             Value = "Select Config",
             Callback = function() end
         })
 
-        Section:Button({
+        ConfigSection:Button({
             Title = "Save Config",
             Desc = "บันทึกการตั้งค่าปัจจุบัน",
             Callback = function()
@@ -3472,7 +2837,7 @@ function EmperUI:CreateWindow(options)
             end
         })
 
-        Section:Button({
+        ConfigSection:Button({
             Title = "Load Config",
             Desc = "โหลดการตั้งค่าที่เลือก",
             Callback = function()
@@ -3486,7 +2851,7 @@ function EmperUI:CreateWindow(options)
             end
         })
 
-        Section:Button({
+        ConfigSection:Button({
             Title = "Delete Config",
             Desc = "ลบไฟล์การตั้งค่าที่เลือก",
             Callback = function()
@@ -3506,7 +2871,7 @@ function EmperUI:CreateWindow(options)
             end
         })
 
-        Section:Button({
+        ConfigSection:Button({
             Title = "Refresh Configs",
             Callback = function()
                 ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName))
@@ -3514,7 +2879,7 @@ function EmperUI:CreateWindow(options)
             end
         })
 
-        local AutoLoadToggle = Section:Toggle({
+        local AutoLoadToggle = ConfigSection:Toggle({
             Title = "Auto Load Config",
             Desc = "บันทึกและโหลดออโต้เมื่อเปิดสคริปต์",
             Default = false,
@@ -3531,6 +2896,47 @@ function EmperUI:CreateWindow(options)
                     end
                 end
             end
+        })
+
+        if ConfigSection == ThemeSection then
+            ThemeSection:Divider()
+        end
+        
+        ThemeSection:Label("Theme Settings")
+        
+        local themeNames = {}
+        for tName, _ in pairs(EmperUI.Themes) do
+            table.insert(themeNames, tName)
+        end
+        
+        ThemeSection:Dropdown({
+            Title = "UI Theme",
+            Values = themeNames,
+            Value = "Default",
+            Callback = function(val)
+                WindowObj:SetTheme(val)
+            end,
+            Flag = "EmperUI_Theme"
+        })
+
+        ThemeSection:TextBox({
+            Title = "Background Image ID",
+            Placeholder = "ใส่ตัวเลข ID รูปภาพ...",
+            Callback = function(val)
+                WindowObj:SetBackgroundImage(val)
+            end,
+            Flag = "EmperUI_BgImage"
+        })
+
+        ThemeSection:Slider({
+            Title = "Background Transparency",
+            Min = 0,
+            Max = 100,
+            Default = 80,
+            Callback = function(val)
+                WindowObj:SetBackgroundTransparency(val / 100)
+            end,
+            Flag = "EmperUI_BgTrans"
         })
 
         task.spawn(function()
@@ -3553,6 +2959,111 @@ function EmperUI:CreateWindow(options)
                 end
             end
         end)
+    end
+
+    -- [ Premium Feature: Live Watermark ]
+    function WindowObj:SetWatermark(text)
+        if WindowObj.Watermark then
+            WindowObj.Watermark:Destroy()
+        end
+
+        local WM = Instance.new("Frame")
+        WM.Name = "Watermark"
+        WM.Parent = ScreenGui
+        WM.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+        WM.BackgroundTransparency = 0.2
+        WM.BorderSizePixel = 0
+        WM.Position = UDim2.new(0, 10, 0, 10)
+        WM.Size = UDim2.new(0, 200, 0, 26)
+        WindowObj.Watermark = WM
+
+        local WMCorner = Instance.new("UICorner")
+        WMCorner.CornerRadius = UDim.new(0, 6)
+        WMCorner.Parent = WM
+
+        local WMStroke = Instance.new("UIStroke")
+        WMStroke.Thickness = 1.5
+        WMStroke.Transparency = 0.2
+        WindowObj:ApplyTheme(WMStroke, "Color", "Accent")
+        WMStroke.Parent = WM
+
+        local WMLabel = Instance.new("TextLabel")
+        WMLabel.Parent = WM
+        WMLabel.BackgroundTransparency = 1
+        WMLabel.Position = UDim2.new(0, 8, 0, 0)
+        WMLabel.Size = UDim2.new(1, -16, 1, 0)
+        WMLabel.Font = Enum.Font.GothamMedium
+        WMLabel.TextSize = 12
+        WindowObj:ApplyTheme(WMLabel, "TextColor3", "Text")
+        WMLabel.TextXAlignment = Enum.TextXAlignment.Left
+        WMLabel.RichText = true
+
+        MakeDraggable(WM, WM)
+
+        task.spawn(function()
+            local runService = game:GetService("RunService")
+            local stats = game:GetService("Stats")
+            local frames = 0
+            local fps = 60
+            
+            runService.RenderStepped:Connect(function()
+                frames = frames + 1
+            end)
+            
+            while task.wait(1) do
+                fps = frames
+                frames = 0
+                local ping = math.floor(stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+                local timeStr = os.date("%H:%M:%S")
+                
+                local finalText = text
+                finalText = finalText:gsub("{fps}", tostring(fps))
+                finalText = finalText:gsub("{ping}", tostring(ping) .. "ms")
+                finalText = finalText:gsub("{time}", timeStr)
+                
+                WMLabel.Text = finalText
+                
+                -- Auto resize
+                local textBounds = WMLabel.TextBounds
+                TweenService:Create(WM, TweenInfo.new(0.2), {Size = UDim2.new(0, textBounds.X + 24, 0, 26)}):Play()
+            end
+        end)
+    end
+
+    -- [ Premium Feature: Aurora Background (Glassmorphism Effect) ]
+    function WindowObj:EnableAuroraBackground()
+        local AuroraFolder = Instance.new("Folder")
+        AuroraFolder.Name = "AuroraEffects"
+        AuroraFolder.Parent = MainFrame
+        
+        local function CreateOrb(size, pos, colorKey)
+            local Orb = Instance.new("ImageLabel")
+            Orb.Parent = MainFrame
+            Orb.BackgroundTransparency = 1
+            Orb.Position = pos
+            Orb.Size = size
+            Orb.Image = "rbxassetid://13192853046"
+            WindowObj:ApplyTheme(Orb, "ImageColor3", colorKey)
+            Orb.ImageTransparency = 0.5
+            Orb.ZIndex = 0
+            
+            -- Animate Orb floating
+            task.spawn(function()
+                while task.wait() do
+                    local rx = math.random(-50, 50)
+                    local ry = math.random(-50, 50)
+                    local time = math.random(5, 10)
+                    local newPos = UDim2.new(pos.X.Scale, pos.X.Offset + rx, pos.Y.Scale, pos.Y.Offset + ry)
+                    
+                    local tw = TweenService:Create(Orb, TweenInfo.new(time, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Position = newPos})
+                    tw:Play()
+                    tw.Completed:Wait()
+                end
+            end)
+        end
+
+        CreateOrb(UDim2.new(0, 300, 0, 300), UDim2.new(0, -50, 0, -50), "Accent")
+        CreateOrb(UDim2.new(0, 250, 0, 250), UDim2.new(1, -200, 1, -200), "Accent2")
     end
 
     return WindowObj
