@@ -3488,10 +3488,12 @@ function EmperUI:CreateWindow(options)
             -- [ Create TextBox ]
             function Section:CreateTextBox(arg1, arg2, arg3)
                 local tbText, placeholder, callback
+                local defaultValue = ""
                 if type(arg1) == "table" then
                     tbText = arg1.Title or arg1.Name or "TextBox"
                     placeholder = arg1.Placeholder or ""
                     callback = arg1.Callback
+                    defaultValue = arg1.Value or arg1.Default or ""
                 else
                     tbText = arg1
                     placeholder = arg2
@@ -3510,16 +3512,16 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(TbFrame, "BackgroundColor3", "ElementBg")
                 TbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 TbFrame.BorderSizePixel = 0
-
+ 
                 local TbCorner = Instance.new("UICorner")
                 TbCorner.CornerRadius = UDim.new(0, 6)
                 TbCorner.Parent = TbFrame
-
+ 
                 local TbStroke = Instance.new("UIStroke")
                 WindowObj:ApplyTheme(TbStroke, "Color", "Border")
                 TbStroke.Thickness = 1
                 TbStroke.Parent = TbFrame
-
+ 
                 local TbLabel = Instance.new("TextLabel")
                 TbLabel.Parent = TbFrame
                 TbLabel.BackgroundTransparency = 1
@@ -3531,7 +3533,7 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(TbLabel, "TextColor3", "Text")
                 TbLabel.TextSize = 15
                 TbLabel.TextXAlignment = Enum.TextXAlignment.Left
-
+ 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
                     DescLabel.Parent = TbFrame
@@ -3545,7 +3547,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
-
+ 
                 local TextBoxBg = Instance.new("Frame")
                 TextBoxBg.Parent = TbFrame
                 TextBoxBg.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
@@ -3553,38 +3555,38 @@ function EmperUI:CreateWindow(options)
                 TextBoxBg.Size = UDim2.new(0.5, -16, 0, 26)
                 TextBoxBg.BorderSizePixel = 0
                 TextBoxBg.ClipsDescendants = true
-
+ 
                 local BgCorner = Instance.new("UICorner")
                 BgCorner.CornerRadius = UDim.new(0, 4)
                 BgCorner.Parent = TextBoxBg
-
+ 
                 local BgStroke = Instance.new("UIStroke")
                 WindowObj:ApplyTheme(BgStroke, "Color", "Border")
                 BgStroke.Thickness = 1
                 BgStroke.Parent = TextBoxBg
-
+ 
                 local TextBox = Instance.new("TextBox")
                 TextBox.Parent = TextBoxBg
                 TextBox.BackgroundTransparency = 1
                 TextBox.Size = UDim2.new(1, 0, 1, 0)
                 TextBox.Font = Enum.Font.Gotham
                 TextBox.PlaceholderText = placeholder or ""
-                TextBox.Text = ""
+                TextBox.Text = defaultValue
                 WindowObj:ApplyTheme(TextBox, "TextColor3", "Text")
                 WindowObj:ApplyTheme(TextBox, "PlaceholderColor3", "TextMuted")
                 TextBox.TextSize = 12
-
+ 
                 TextBox.Focused:Connect(function()
                     TweenService:Create(BgStroke, TweenInfo.new(0.2), {Color = Theme.Accent}):Play()
                 end)
-
+ 
                 TextBox.FocusLost:Connect(function(enterPressed)
                     TweenService:Create(BgStroke, TweenInfo.new(0.2), {Color = Theme.Border}):Play()
                     if callback then
                         callback(TextBox.Text)
                     end
                 end)
-
+ 
                 local TextBoxObj = {}
                 function TextBoxObj:GetValue()
                     return TextBox.Text
@@ -3592,17 +3594,13 @@ function EmperUI:CreateWindow(options)
                 function TextBoxObj:SetValue(val)
                     TextBox.Text = tostring(val)
                 end
-                
-                function TextBoxObj:GetValue()
-                    return TextBox.Text
-                end
-
+ 
                 WindowObj.ConfigElements[tbText] = {
                     Type = "TextBox",
                     GetValue = function() return TextBox.Text end,
                     SetValue = function(val) TextBox.Text = tostring(val) end
                 }
-
+ 
                 return TextBoxObj
             end
 
