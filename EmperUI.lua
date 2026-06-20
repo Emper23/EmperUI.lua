@@ -3598,7 +3598,10 @@ function EmperUI:CreateWindow(options)
                 WindowObj.ConfigElements[tbText] = {
                     Type = "TextBox",
                     GetValue = function() return TextBox.Text end,
-                    SetValue = function(val) TextBox.Text = tostring(val) end
+                    SetValue = function(val) 
+                        TextBox.Text = tostring(val) 
+                        if callback then callback(tostring(val)) end
+                    end
                 }
  
                 return TextBoxObj
@@ -4552,11 +4555,36 @@ function EmperUI:CreateWindow(options)
             Flag = "EmperUI_Theme"
         })
 
-        ThemeSection:TextBox({
-            Title = "Background Image ID",
-            Placeholder = "ใส่ตัวเลข ID รูปภาพ...",
+        local bgImages = {
+            ["None"] = "",
+            ["Vaporwave"] = "rbxassetid://14264350106",
+            ["Synthwave"] = "rbxassetid://12518610313",
+            ["Anime Sky"] = "rbxassetid://15682149586",
+            ["Galaxy"] = "rbxassetid://15949826315",
+            ["Grid Pattern"] = "rbxassetid://11413861214",
+            ["Abstract"] = "rbxassetid://14264354228",
+            ["Cyberpunk"] = "rbxassetid://15682151528",
+            ["Custom 1"] = "rbxassetid://4648663419",
+            ["Custom 2"] = "rbxassetid://12519204084"
+        }
+        
+        local bgNames = {}
+        for name, _ in pairs(bgImages) do
+            table.insert(bgNames, name)
+        end
+        table.sort(bgNames, function(a, b)
+            if a == "None" then return true end
+            if b == "None" then return false end
+            return a < b
+        end)
+
+        ThemeSection:Dropdown({
+            Title = "Background Image",
+            Values = bgNames,
+            Value = "None",
             Callback = function(val)
-                WindowObj:SetBackgroundImage(val)
+                local id = bgImages[val] or ""
+                WindowObj:SetBackgroundImage(id)
             end,
             Flag = "EmperUI_BgImage"
         })
