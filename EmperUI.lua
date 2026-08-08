@@ -675,6 +675,11 @@ function EmperUI:CreateWindow(options)
         ControlScale = math.clamp(tonumber(options.ControlScale) or 1, 0.85, 1.25),
         ControlRadius = math.clamp(tonumber(options.ControlRadius) or 6, 0, 16),
         ControlSpacing = math.clamp(tonumber(options.ControlSpacing) or 10, 2, 20),
+        AutoSettingsThemeStudio = options.AutoSettingsThemeStudio ~= false,
+        SettingsThemeFolder = options.SettingsThemeFolder or "EmperUI_Themes",
+        SettingsThemeCollapsed = options.SettingsThemeCollapsed ~= false,
+        SettingsThemeLauncher = options.SettingsThemeLauncher ~= false,
+        SettingsThemeLauncherCollapsed = options.SettingsThemeLauncherCollapsed ~= false,
     }
 
     function WindowObj:Connect(signal, callback)
@@ -5812,6 +5817,23 @@ function EmperUI:CreateWindow(options)
             tabData.Selected = true
         end
 
+        -- Settings pages get the built-in theme sections automatically. The
+        -- deferred call keeps the existing explicit CreateThemeStudioTab API
+        -- authoritative when a caller configures it immediately after the tab.
+        if WindowObj.AutoSettingsThemeStudio and tostring(tabName):lower() == "settings" then
+            task.defer(function()
+                if WindowObj.Alive and not WindowObj.ThemeStudio and WindowObj.CreateThemeStudioTab then
+                    WindowObj:CreateThemeStudioTab({
+                        ParentTab = TabObj,
+                        Folder = WindowObj.SettingsThemeFolder,
+                        Collapsed = WindowObj.SettingsThemeCollapsed,
+                        Launcher = WindowObj.SettingsThemeLauncher,
+                        LauncherCollapsed = WindowObj.SettingsThemeLauncherCollapsed,
+                    })
+                end
+            end)
+        end
+
         return TabObj
     end
 
@@ -6741,15 +6763,23 @@ function EmperUI:CreateWindow(options)
         if self.ThemeStudio then return self.ThemeStudio end
         local folderName = studioOptions.Folder or "EmperUI_Themes"
         local tab = studioOptions.ParentTab or self:CreateTab(studioOptions.Title or "Theme Studio", studioOptions.Icon or "palette")
-        local left = tab:CreateSection({Side = "Left", Title = "Live Colors"})
-        local right = tab:CreateSection({Side = "Right", Title = "Theme Profiles"})
-        local studio = {Tab = tab, Pickers = {}, Folder = folderName}
+        local collapsed = studioOptions.Collapsed == true
+        local left = tab:CreateSection({Side = "Left", Title = "Live Colors", Collapsed = collapsed})
+        local right = tab:CreateSection({Side = "Right", Title = "Theme Profiles", Collapsed = collapsed})
+        local studio = {Tab = tab, Pickers = {}, Folder = folderName, Open = studioOptions.Hidden ~= true}
         self.ThemeStudio = studio
 
         if studioOptions.Hidden then
             left:SetVisible(false)
             right:SetVisible(false)
-            local launcher = tab:CreateSection({Side = "Left", Title = studioOptions.LauncherTitle or "Theme Studio"})
+        end
+
+        if studioOptions.Launcher == true or studioOptions.Hidden then
+            local launcher = tab:CreateSection({
+                Side = "Left",
+                Title = studioOptions.LauncherTitle or "Theme Studio",
+                Collapsed = studioOptions.LauncherCollapsed == true,
+            })
             local openButton
             openButton = launcher:Button({
                 Title = studioOptions.LauncherText or "Open Theme Studio",
@@ -6761,7 +6791,6 @@ function EmperUI:CreateWindow(options)
                 end,
             })
             studio.Launcher = launcher
-            studio.Open = false
         end
 
         local preview = left:Paragraph({Title = "Preview", Content = "Change a color to update this Window instantly."})
