@@ -5934,8 +5934,13 @@ function EmperUI:CreateWindow(options)
 
     local StatsLayout = Instance.new("UIGridLayout")
     StatsLayout.Parent = StatsFrame
-    StatsLayout.CellSize = UDim2.new(0, 210, 0, 60)
-    StatsLayout.CellPadding = UDim2.new(0, 15, 0, 15)
+    -- Keep profile stats in a deterministic two-column layout.
+    -- Using a proportional cell width prevents the cards from wrapping into
+    -- one vertical column when the window is narrower than the old 210px card.
+    StatsLayout.FillDirection = Enum.FillDirection.Horizontal
+    StatsLayout.FillDirectionMaxCells = 2
+    StatsLayout.CellSize = UDim2.new(0.5, -8, 0, 60)
+    StatsLayout.CellPadding = UDim2.new(0, 8, 0, 15)
     StatsLayout.SortOrder = Enum.SortOrder.LayoutOrder
     StatsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
