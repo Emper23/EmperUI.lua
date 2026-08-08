@@ -6764,14 +6764,14 @@ function EmperUI:CreateWindow(options)
         local folderName = studioOptions.Folder or "EmperUI_Themes"
         local tab = studioOptions.ParentTab or self:CreateTab(studioOptions.Title or "Theme Studio", studioOptions.Icon or "palette")
         local collapsed = studioOptions.Collapsed == true
-        local left = tab:CreateSection({Side = "Left", Title = "Live Colors", Collapsed = collapsed})
-        local right = tab:CreateSection({Side = "Right", Title = "Theme Profiles", Collapsed = collapsed})
+        local colors = tab:CreateSection({Side = "Right", Title = "Live Colors", Collapsed = collapsed})
+        local profiles = tab:CreateSection({Side = "Right", Title = "Theme Profiles", Collapsed = collapsed})
         local studio = {Tab = tab, Pickers = {}, Folder = folderName, Open = studioOptions.Hidden ~= true}
         self.ThemeStudio = studio
 
         if studioOptions.Hidden then
-            left:SetVisible(false)
-            right:SetVisible(false)
+            colors:SetVisible(false)
+            profiles:SetVisible(false)
         end
 
         if studioOptions.Launcher == true or studioOptions.Hidden then
@@ -6786,17 +6786,17 @@ function EmperUI:CreateWindow(options)
                 Desc = "Choose a color or theme profile",
                 Callback = function()
                     studio.Open = not studio.Open
-                    left:SetVisible(studio.Open)
-                    right:SetVisible(studio.Open)
+                    colors:SetVisible(studio.Open)
+                    profiles:SetVisible(studio.Open)
                 end,
             })
             studio.Launcher = launcher
         end
 
-        local preview = left:Paragraph({Title = "Preview", Content = "Change a color to update this Window instantly."})
+        local preview = colors:Paragraph({Title = "Preview", Content = "Change a color to update this Window instantly."})
         local keys = {"Background", "Sidebar", "Topbar", "Accent", "Accent2", "Text", "TextMuted", "ElementBg", "ElementHover", "Border"}
         for _, key in ipairs(keys) do
-            studio.Pickers[key] = left:Colorpicker({
+            studio.Pickers[key] = colors:Colorpicker({
                 Title = key,
                 Default = Theme[key],
                 Callback = function(color)
@@ -6806,30 +6806,30 @@ function EmperUI:CreateWindow(options)
             })
         end
 
-        local nameBox = right:TextBox({Title = "Theme Name", Placeholder = "my_theme", Callback = function() end})
-        local themeDropdown = right:Dropdown({Title = "Saved Themes", Values = self:GetThemes(folderName), Default = "Select Theme", Callback = function() end})
-        right:Button({Title = "Save Theme", Callback = function()
+        local nameBox = profiles:TextBox({Title = "Theme Name", Placeholder = "my_theme", Callback = function() end})
+        local themeDropdown = profiles:Dropdown({Title = "Saved Themes", Values = self:GetThemes(folderName), Default = "Select Theme", Callback = function() end})
+        profiles:Button({Title = "Save Theme", Callback = function()
             local name = SanitizeThemeName(nameBox:GetValue())
             if name ~= "" and self:SaveTheme(folderName, name) then
                 themeDropdown:Refresh(self:GetThemes(folderName), name)
                 preview:SetContent("Saved theme: " .. name)
             end
         end})
-        right:Button({Title = "Load Theme", Callback = function()
+        profiles:Button({Title = "Load Theme", Callback = function()
             local name = themeDropdown:GetValue()
             if name and name ~= "" and name ~= "Select Theme" and self:LoadTheme(folderName, name) then
                 for key, picker in pairs(studio.Pickers) do picker:SetColor(Theme[key]) end
                 preview:SetContent("Loaded theme: " .. name)
             end
         end})
-        right:Button({Title = "Delete Theme", Callback = function()
+        profiles:Button({Title = "Delete Theme", Callback = function()
             local name = themeDropdown:GetValue()
             if name and name ~= "" and name ~= "Select Theme" and self:DeleteTheme(folderName, name) then
                 themeDropdown:Refresh(self:GetThemes(folderName), "Select Theme")
                 preview:SetContent("Deleted theme: " .. name)
             end
         end})
-        right:Button({Title = "Reset to Default", Callback = function()
+        profiles:Button({Title = "Reset to Default", Callback = function()
             for key, color in pairs(EmperUI.Themes.Default) do
                 self:SetThemeColor(key, color)
                 if studio.Pickers[key] then studio.Pickers[key]:SetColor(color) end
