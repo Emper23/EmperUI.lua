@@ -1,12 +1,81 @@
 local EmperUI = {}
 EmperUI.__index = EmperUI
+EmperUI.Version = "1.4.0-language"
+
+EmperUI.Languages = {
+    English = {},
+    Thai = {
+        ["Profile"] = "โปรไฟล์",
+        ["Components"] = "ส่วนประกอบ",
+        ["UX & Responsive"] = "การใช้งานและการปรับขนาด",
+        ["Visual Systems"] = "ระบบภาพ",
+        ["Settings"] = "ตั้งค่า",
+        ["Lifecycle"] = "วงจรหน้าต่าง",
+        ["Basic Controls"] = "ตัวควบคุมพื้นฐาน",
+        ["Selection & Input"] = "ตัวเลือกและอินพุต",
+        ["Display Components"] = "ส่วนแสดงผล",
+        ["Input & Section API"] = "อินพุตและ Section API",
+        ["Responsive Scale"] = "การย่อขนาดตามหน้าจอ",
+        ["Search & Tooltip"] = "ค้นหาและคำแนะนำ",
+        ["Themes"] = "ธีม",
+        ["Feedback"] = "การแจ้งเตือน",
+        ["Window"] = "หน้าต่าง",
+        ["Library"] = "ไลบรารี",
+        ["Test Button"] = "ปุ่มทดสอบ",
+        ["Test Toggle"] = "สวิตช์ทดสอบ",
+        ["Test Slider"] = "สไลเดอร์ทดสอบ",
+        ["Progress"] = "ความคืบหน้า",
+        ["Server Status"] = "สถานะเซิร์ฟเวอร์",
+        ["ONLINE"] = "ออนไลน์",
+        ["UPDATED"] = "อัปเดตแล้ว",
+        ["Dropdown"] = "เมนูตัวเลือก",
+        ["Multi Dropdown"] = "เมนูหลายตัวเลือก",
+        ["TextBox"] = "ช่องข้อความ",
+        ["Keybind"] = "ปุ่มลัด",
+        ["Colorpicker"] = "เลือกสี",
+        ["Number Input"] = "ช่องตัวเลข",
+        ["Label component"] = "ตัวอย่าง Label",
+        ["Paragraph"] = "ข้อความอธิบาย",
+        ["UI Theme"] = "ธีม UI",
+        ["Background Transparency"] = "ความโปร่งใสพื้นหลัง",
+        ["Enable Aurora"] = "เปิด Aurora",
+        ["Disable Aurora"] = "ปิด Aurora",
+        ["Show Dialog"] = "แสดง Dialog",
+        ["Notify: success"] = "แจ้งเตือน: สำเร็จ",
+        ["Notify: error"] = "แจ้งเตือน: ผิดพลาด",
+        ["Notify: warning"] = "แจ้งเตือน: ระวัง",
+        ["Notify: info"] = "แจ้งเตือน: ข้อมูล",
+        ["Window Scale (%)"] = "ขนาดหน้าต่าง (%)",
+        ["Switch Language"] = "สลับภาษา",
+        ["ภาษาไทย"] = "English",
+        ["English"] = "ภาษาไทย",
+    },
+}
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
+local TextService = game:GetService("TextService")
 
-local TargetParent = gethui and gethui() or CoreGui
+local function GetEnvironment()
+    if type(getgenv) == "function" then
+        local success, environment = pcall(getgenv)
+        if success and type(environment) == "table" then
+            return environment
+        end
+    end
+    return _G
+end
+
+local Environment = GetEnvironment()
+local TargetParent = CoreGui
+if type(gethui) == "function" then
+    local success, hiddenUi = pcall(gethui)
+    if success and hiddenUi then
+        TargetParent = hiddenUi
+    end
+end
 
 
 EmperUI.Themes = {
@@ -69,6 +138,41 @@ EmperUI.Themes = {
         ElementBg = Color3.fromRGB(20, 20, 20),
         ElementHover = Color3.fromRGB(30, 30, 30),
         Border = Color3.fromRGB(40, 40, 40)
+    },
+    Neon = {
+        Background = Color3.fromRGB(8, 10, 18), Sidebar = Color3.fromRGB(12, 15, 26), Topbar = Color3.fromRGB(12, 15, 26),
+        Accent = Color3.fromRGB(0, 255, 190), Accent2 = Color3.fromRGB(255, 0, 190), Text = Color3.fromRGB(235, 255, 250),
+        TextMuted = Color3.fromRGB(120, 160, 170), ElementBg = Color3.fromRGB(15, 22, 34), ElementHover = Color3.fromRGB(25, 38, 55), Border = Color3.fromRGB(35, 90, 95)
+    },
+    Forest = {
+        Background = Color3.fromRGB(9, 18, 13), Sidebar = Color3.fromRGB(14, 29, 20), Topbar = Color3.fromRGB(14, 29, 20),
+        Accent = Color3.fromRGB(100, 220, 105), Accent2 = Color3.fromRGB(190, 240, 100), Text = Color3.fromRGB(230, 250, 230),
+        TextMuted = Color3.fromRGB(125, 165, 130), ElementBg = Color3.fromRGB(20, 40, 27), ElementHover = Color3.fromRGB(30, 58, 37), Border = Color3.fromRGB(45, 95, 52)
+    },
+    Rose = {
+        Background = Color3.fromRGB(24, 10, 17), Sidebar = Color3.fromRGB(38, 15, 27), Topbar = Color3.fromRGB(38, 15, 27),
+        Accent = Color3.fromRGB(255, 95, 165), Accent2 = Color3.fromRGB(255, 180, 210), Text = Color3.fromRGB(255, 238, 247),
+        TextMuted = Color3.fromRGB(185, 125, 150), ElementBg = Color3.fromRGB(50, 22, 38), ElementHover = Color3.fromRGB(70, 30, 52), Border = Color3.fromRGB(110, 45, 75)
+    },
+    Cyberpunk = {
+        Background = Color3.fromRGB(12, 7, 22), Sidebar = Color3.fromRGB(24, 10, 40), Topbar = Color3.fromRGB(24, 10, 40),
+        Accent = Color3.fromRGB(255, 220, 0), Accent2 = Color3.fromRGB(255, 35, 145), Text = Color3.fromRGB(255, 250, 215),
+        TextMuted = Color3.fromRGB(175, 150, 115), ElementBg = Color3.fromRGB(39, 18, 55), ElementHover = Color3.fromRGB(60, 24, 78), Border = Color3.fromRGB(105, 65, 30)
+    },
+    Amber = {
+        Background = Color3.fromRGB(20, 13, 6), Sidebar = Color3.fromRGB(35, 22, 10), Topbar = Color3.fromRGB(35, 22, 10),
+        Accent = Color3.fromRGB(255, 175, 40), Accent2 = Color3.fromRGB(255, 90, 30), Text = Color3.fromRGB(255, 242, 210),
+        TextMuted = Color3.fromRGB(180, 145, 95), ElementBg = Color3.fromRGB(50, 31, 15), ElementHover = Color3.fromRGB(72, 42, 18), Border = Color3.fromRGB(115, 70, 25)
+    },
+    Lavender = {
+        Background = Color3.fromRGB(14, 10, 25), Sidebar = Color3.fromRGB(24, 17, 42), Topbar = Color3.fromRGB(24, 17, 42),
+        Accent = Color3.fromRGB(180, 125, 255), Accent2 = Color3.fromRGB(100, 210, 255), Text = Color3.fromRGB(242, 235, 255),
+        TextMuted = Color3.fromRGB(155, 135, 185), ElementBg = Color3.fromRGB(36, 25, 58), ElementHover = Color3.fromRGB(52, 35, 78), Border = Color3.fromRGB(80, 55, 120)
+    },
+    Monochrome = {
+        Background = Color3.fromRGB(12, 12, 12), Sidebar = Color3.fromRGB(20, 20, 20), Topbar = Color3.fromRGB(20, 20, 20),
+        Accent = Color3.fromRGB(235, 235, 235), Accent2 = Color3.fromRGB(150, 150, 150), Text = Color3.fromRGB(245, 245, 245),
+        TextMuted = Color3.fromRGB(140, 140, 140), ElementBg = Color3.fromRGB(28, 28, 28), ElementHover = Color3.fromRGB(42, 42, 42), Border = Color3.fromRGB(65, 65, 65)
     }
 }
 
@@ -77,25 +181,32 @@ local function RandomName()
 end
 
 -- [ Notification System ]
+if Environment.EmperUI_NotificationGui then
+    pcall(function()
+        Environment.EmperUI_NotificationGui:Destroy()
+    end)
+end
+
 local NotifGui = Instance.new("ScreenGui")
 NotifGui.Name = RandomName()
 NotifGui.Parent = TargetParent
 NotifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 NotifGui.ResetOnSpawn = false
+Environment.EmperUI_NotificationGui = NotifGui
 
 local NotifContainer = Instance.new("Frame")
 NotifContainer.Parent = NotifGui
 NotifContainer.BackgroundTransparency = 1
 NotifContainer.AnchorPoint = Vector2.new(1, 1)
-NotifContainer.Position = UDim2.new(1, -20, 1, -120)
-NotifContainer.Size = UDim2.new(0, 290, 1, 0)
+NotifContainer.Position = UDim2.new(1, -18, 1, -18)
+    NotifContainer.Size = UDim2.new(0, 270, 1, -36)
 NotifContainer.ClipsDescendants = false
 
 local NotifLayout = Instance.new("UIListLayout")
 NotifLayout.Parent = NotifContainer
 NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
 NotifLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
-NotifLayout.Padding = UDim.new(0, 8)
+NotifLayout.Padding = UDim.new(0, 6)
 
 local NotifColors = {
     success = Color3.fromRGB(0, 200, 100),
@@ -114,80 +225,68 @@ function EmperUI:Notify(opts)
     opts = opts or {}
     local title    = opts.Title    or "Notification"
     local message  = opts.Message  or ""
-    local duration = opts.Duration or 4
+    local duration = math.max(0.5, tonumber(opts.Duration) or 4)
     local ntype    = opts.Type     or "info"
     local accent   = NotifColors[ntype] or NotifColors.info
     local icon     = NotifIcons[ntype]  or "i"
 
+    -- UIListLayout controls Holder; the Card moves inside it for clean animation.
+    local Holder = Instance.new("Frame")
+    Holder.Parent = NotifContainer
+    Holder.BackgroundTransparency = 1
+    Holder.Size = UDim2.new(1, 0, 0, 62)
+
     local Card = Instance.new("Frame")
-    Card.Parent = NotifContainer
-    Card.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    Card.Size = UDim2.new(1, 0, 0, 68)
-    Card.Position = UDim2.new(0, 12, 0, 0)  -- start slightly right inside container
-    Card.BackgroundTransparency = 1
+    Card.Parent = Holder
+    Card.BackgroundColor3 = Color3.fromRGB(10, 12, 16)
+    Card.Size = UDim2.new(1, 0, 1, 0)
+    Card.Position = UDim2.new(0, 30, 0, 0)
+    Card.BackgroundTransparency = 0.28
     Card.BorderSizePixel = 0
-    Card.ClipsDescendants = false
+    Card.ClipsDescendants = true
 
     local CardCorner = Instance.new("UICorner")
-    CardCorner.CornerRadius = UDim.new(0, 14)
+    CardCorner.CornerRadius = UDim.new(0, 5)
     CardCorner.Parent = Card
 
-    -- Type-tinted gradient: dark base (right) → accent-tinted (left)
+    -- Very subtle tint; keeps the toast dark without looking completely black.
     local CardGrad = Instance.new("UIGradient")
     CardGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, accent:Lerp(Color3.fromRGB(18, 18, 26), 0.82)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 18, 26))
+        ColorSequenceKeypoint.new(0, accent:Lerp(Color3.fromRGB(10, 12, 16), 0.96)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 12, 16)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 10, 13))
     })
     CardGrad.Rotation = 0
     CardGrad.Parent = Card
 
-    -- Thin clean left accent bar (3px only)
+    -- Short accent rail instead of a full-height colored edge.
     local Bar = Instance.new("Frame")
     Bar.Parent = Card
     Bar.BackgroundColor3 = accent
     Bar.BorderSizePixel = 0
-    Bar.Position = UDim2.new(0, 0, 0, 0)
-    Bar.Size = UDim2.new(0, 3, 1, 0)
+    Bar.Position = UDim2.new(0, 0, 0, 5)
+    Bar.Size = UDim2.new(0, 2, 1, -10)
 
     local BarCorner = Instance.new("UICorner")
-    BarCorner.CornerRadius = UDim.new(0, 12)
+    BarCorner.CornerRadius = UDim.new(1, 0)
     BarCorner.Parent = Bar
 
-    -- subtle UIStroke border (clean, thin)
     local CardStroke = Instance.new("UIStroke")
-    CardStroke.Color = accent
+    CardStroke.Color = accent:Lerp(Color3.fromRGB(70, 72, 84), 0.65)
     CardStroke.Thickness = 1
-    CardStroke.Transparency = 0.7
+    CardStroke.Transparency = 0.35
     CardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     CardStroke.Parent = Card
 
-    -- Soft glow behind icon (left side)
-    local Glow = Instance.new("Frame")
-    Glow.Parent = Card
-    Glow.BackgroundColor3 = accent
-    Glow.BackgroundTransparency = 0.9
-    Glow.BorderSizePixel = 0
-    Glow.Position = UDim2.new(0, 3, 0, 0)
-    Glow.Size = UDim2.new(0, 50, 1, 0)
-    local GlowGrad = Instance.new("UIGradient")
-    GlowGrad.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    GlowGrad.Rotation = 0
-    GlowGrad.Parent = Glow
-
-    -- Icon circle — smaller, vibrant, solid color
     local IconCircle = Instance.new("Frame")
     IconCircle.Parent = Card
-    IconCircle.BackgroundColor3 = accent
-    IconCircle.BackgroundTransparency = 0.15
-    IconCircle.Position = UDim2.new(0, 18, 0.5, -11)
-    IconCircle.Size = UDim2.new(0, 22, 0, 22)
+    IconCircle.BackgroundTransparency = 1
+    IconCircle.Position = UDim2.new(0, 14, 0.5, -13)
+    IconCircle.Size = UDim2.new(0, 26, 0, 26)
     IconCircle.BorderSizePixel = 0
 
     local IconCircleCorner = Instance.new("UICorner")
-    IconCircleCorner.CornerRadius = UDim.new(1, 0)
+    IconCircleCorner.CornerRadius = UDim.new(0, 4)
     IconCircleCorner.Parent = IconCircle
 
     local IconLabel = Instance.new("TextLabel")
@@ -196,79 +295,122 @@ function EmperUI:Notify(opts)
     IconLabel.Size = UDim2.new(1, 0, 1, 0)
     IconLabel.Font = Enum.Font.GothamBold
     IconLabel.TextSize = 12
-    IconLabel.TextColor3 = Color3.new(1, 1, 1)  -- pure white, always readable
+    IconLabel.TextColor3 = accent
     IconLabel.Text = icon
     IconLabel.TextXAlignment = Enum.TextXAlignment.Center
 
-    -- Title
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Parent = Card
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Position = UDim2.new(0, 50, 0, 9)
-    TitleLabel.Size = UDim2.new(1, -58, 0, 18)
+    TitleLabel.Position = UDim2.new(0, 48, 0, 8)
+    TitleLabel.Size = UDim2.new(1, -70, 0, 18)
     TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 15
-    TitleLabel.TextColor3 = Color3.fromRGB(240, 242, 255)
+    TitleLabel.TextSize = 13
+    TitleLabel.TextColor3 = Color3.fromRGB(237, 239, 247)
     TitleLabel.Text = title
+    TitleLabel.TextTruncate = Enum.TextTruncate.AtEnd
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Message (brighter gray - easier to read)
     local MsgLabel = Instance.new("TextLabel")
     MsgLabel.Parent = Card
     MsgLabel.BackgroundTransparency = 1
-    MsgLabel.Position = UDim2.new(0, 50, 0, 28)
-    MsgLabel.Size = UDim2.new(1, -56, 0, 28)
+    MsgLabel.Position = UDim2.new(0, 48, 0, 28)
+    MsgLabel.Size = UDim2.new(1, -62, 0, 18)
     MsgLabel.Font = Enum.Font.Gotham
-    MsgLabel.TextSize = 15
-    MsgLabel.TextColor3 = Color3.fromRGB(175, 177, 195)
+    MsgLabel.TextSize = 12
+    MsgLabel.TextColor3 = Color3.fromRGB(153, 157, 172)
     MsgLabel.Text = message
-    MsgLabel.TextWrapped = true
+    MsgLabel.TextTruncate = Enum.TextTruncate.AtEnd
     MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
-    MsgLabel.TextYAlignment = Enum.TextYAlignment.Top
 
-    -- Timer line (top edge, very subtle)
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Parent = Card
+    CloseButton.AnchorPoint = Vector2.new(1, 0)
+    CloseButton.Position = UDim2.new(1, -5, 0, 4)
+    CloseButton.Size = UDim2.new(0, 18, 0, 18)
+    CloseButton.BackgroundTransparency = 1
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.Text = "x"
+    CloseButton.TextColor3 = Color3.fromRGB(105, 108, 120)
+    CloseButton.TextSize = 10
+    CloseButton.AutoButtonColor = false
+
     local TimerBar = Instance.new("Frame")
     TimerBar.Parent = Card
     TimerBar.BackgroundColor3 = accent
-    TimerBar.BackgroundTransparency = 0.5
+    TimerBar.BackgroundTransparency = 0.15
     TimerBar.BorderSizePixel = 0
-    TimerBar.Position = UDim2.new(0, 3, 0, 0)
-    TimerBar.Size = UDim2.new(1, -3, 0, 2)
+    TimerBar.AnchorPoint = Vector2.new(0, 1)
+    TimerBar.Position = UDim2.new(0, 3, 1, -2)
+    TimerBar.Size = UDim2.new(1, -6, 0, 1)
 
-    -- Slide IN + fade in
+    local TimerCorner = Instance.new("UICorner")
+    TimerCorner.CornerRadius = UDim.new(1, 0)
+    TimerCorner.Parent = TimerBar
+
     TweenService:Create(Card, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 0
     }):Play()
 
-    -- Timer shrink
     TweenService:Create(TimerBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
         Size = UDim2.new(0, 0, 0, 2)
     }):Play()
 
-    task.delay(duration - 0.35, function()
+    local dismissed = false
+    local function dismiss()
+        if dismissed or not Holder.Parent then return end
+        dismissed = true
         local out = TweenService:Create(Card, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-            Position = UDim2.new(0, 12, 0, 0),
+            Position = UDim2.new(0, 30, 0, 0),
             BackgroundTransparency = 1
         })
         out:Play()
         out.Completed:Connect(function()
-            Card:Destroy()
+            Holder:Destroy()
         end)
+    end
+
+    CloseButton.MouseEnter:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.15), {
+            TextColor3 = Color3.fromRGB(225, 227, 235)
+        }):Play()
+    end)
+    CloseButton.MouseLeave:Connect(function()
+        TweenService:Create(CloseButton, TweenInfo.new(0.15), {
+            TextColor3 = Color3.fromRGB(105, 108, 120)
+        }):Play()
+    end)
+    CloseButton.MouseButton1Click:Connect(dismiss)
+
+    task.delay(duration, function()
+        dismiss()
     end)
 end
 
 
-local function MakeDraggable(topbarObject, object)
+local function MakeDraggable(topbarObject, object, connectionOwner)
     local Dragging, DragInput, DragStart, StartPosition
+    local ownConnections = {}
+    local touchEnabled = not connectionOwner or not connectionOwner.GetTouchMode or connectionOwner:GetTouchMode()
 
-    topbarObject.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    local function connect(signal, callback)
+        local connection
+        if connectionOwner and connectionOwner.Connect then
+            connection = connectionOwner:Connect(signal, callback)
+        else
+            connection = signal:Connect(callback)
+        end
+        table.insert(ownConnections, connection)
+        return connection
+    end
+
+    connect(topbarObject.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or (touchEnabled and input.UserInputType == Enum.UserInputType.Touch) then
             Dragging = true
             DragStart = input.Position
             StartPosition = object.Position
 
-            input.Changed:Connect(function()
+            connect(input.Changed, function()
                 if input.UserInputState == Enum.UserInputState.End then
                     Dragging = false
                 end
@@ -276,31 +418,392 @@ local function MakeDraggable(topbarObject, object)
         end
     end)
 
-    topbarObject.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    connect(topbarObject.InputChanged, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or (touchEnabled and input.UserInputType == Enum.UserInputType.Touch) then
             DragInput = input
         end
     end)
 
-    UserInputService.InputChanged:Connect(function(input)
+    connect(UserInputService.InputChanged, function(input)
         if input == DragInput and Dragging then
             local delta = input.Position - DragStart
             object.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
         end
     end)
+
+    return function()
+        for _, connection in ipairs(ownConnections) do
+            pcall(function()
+                connection:Disconnect()
+            end)
+        end
+        table.clear(ownConnections)
+    end
+end
+
+function EmperUI:CreateKeyGate(options)
+    options = type(options) == "table" and options or {}
+    local gate = {Unlocked = false, Alive = true, RememberKey = options.RememberKey == true}
+    local allowedKeys = {}
+    for _, key in ipairs(options.Keys or {}) do
+        allowedKeys[tostring(key):gsub("^%s*(.-)%s*$", "%1"):upper()] = true
+    end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "EmperUI_KeyGate"
+    gui.Parent = TargetParent
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    gate.Gui = gui
+
+    local overlay = Instance.new("Frame")
+    overlay.Parent = gui
+    overlay.Size = UDim2.new(1, 0, 1, 0)
+    overlay.BackgroundColor3 = Color3.fromRGB(5, 6, 10)
+    overlay.BackgroundTransparency = 1
+
+    local card = Instance.new("Frame")
+    card.Parent = overlay
+    card.AnchorPoint = Vector2.new(0.5, 0.5)
+    card.Position = UDim2.new(0.5, 0, 0.5, 0)
+    card.Size = UDim2.new(0, 420, 0, 238)
+    card.BackgroundColor3 = Color3.fromRGB(18, 20, 28)
+    card.BorderSizePixel = 0
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 12)
+    cardCorner.Parent = card
+    local cardStroke = Instance.new("UIStroke")
+    cardStroke.Color = Color3.fromRGB(0, 220, 255)
+    cardStroke.Transparency = 0.05
+    cardStroke.Thickness = 1.5
+    cardStroke.Parent = card
+    local cardGradient = Instance.new("UIGradient")
+    cardGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 255)),
+        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(70, 150, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 70, 210)),
+    })
+    cardGradient.Parent = cardStroke
+    task.spawn(function()
+        local rotation = 0
+        while gate.Alive and card.Parent do
+            rotation = (rotation + 45) % 360
+            local glowTween = TweenService:Create(cardGradient, TweenInfo.new(1.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                Rotation = rotation,
+            })
+            glowTween:Play()
+            glowTween.Completed:Wait()
+        end
+    end)
+
+    local title = Instance.new("TextLabel")
+    title.Parent = card
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.new(0, 28, 0, 24)
+    title.Size = UDim2.new(1, -44, 0, 28)
+    title.Font = Enum.Font.GothamBold
+    title.Text = tostring(options.Title or "Access Key")
+    title.TextColor3 = Color3.fromRGB(245, 245, 250)
+    title.TextSize = 22
+    title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Parent = card
+    subtitle.BackgroundTransparency = 1
+    subtitle.Position = UDim2.new(0, 28, 0, 60)
+    subtitle.Size = UDim2.new(1, -44, 0, 22)
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.Text = tostring(options.Subtitle or "Enter your access key to continue")
+    subtitle.TextColor3 = Color3.fromRGB(145, 150, 165)
+    subtitle.TextSize = 12
+    subtitle.TextXAlignment = Enum.TextXAlignment.Left
+
+    local input = Instance.new("TextBox")
+    input.Parent = card
+    input.Position = UDim2.new(0, 28, 0, 101)
+    input.Size = UDim2.new(1, -56, 0, 42)
+    input.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
+    input.BorderSizePixel = 0
+    input.Font = Enum.Font.Gotham
+    input.PlaceholderText = "EMP-FREE-2026"
+    input.Text = ""
+    input.TextColor3 = Color3.fromRGB(240, 242, 248)
+    input.PlaceholderColor3 = Color3.fromRGB(100, 105, 120)
+    input.TextSize = 13
+    input.ClearTextOnFocus = false
+    local inputCorner = Instance.new("UICorner")
+    inputCorner.CornerRadius = UDim.new(0, 7)
+    inputCorner.Parent = input
+
+    local status = Instance.new("TextLabel")
+    status.Parent = card
+    status.BackgroundTransparency = 1
+    status.Position = UDim2.new(0, 28, 1, -42)
+    status.Size = UDim2.new(0.55, 0, 0, 18)
+    status.Font = Enum.Font.Gotham
+    status.Text = ""
+    status.TextColor3 = Color3.fromRGB(255, 90, 100)
+    status.TextSize = 11
+    status.TextXAlignment = Enum.TextXAlignment.Left
+
+    local unlock = Instance.new("TextButton")
+    unlock.Parent = card
+    unlock.Position = UDim2.new(1, -150, 1, -54)
+    unlock.Size = UDim2.new(0, 90, 0, 36)
+    unlock.BackgroundColor3 = Color3.fromRGB(0, 200, 220)
+    unlock.Text = "UNLOCK"
+    unlock.TextColor3 = Color3.fromRGB(5, 8, 12)
+    unlock.Font = Enum.Font.GothamBold
+    unlock.TextSize = 12
+    unlock.AutoButtonColor = false
+    local unlockCorner = Instance.new("UICorner")
+    unlockCorner.CornerRadius = UDim.new(0, 7)
+    unlockCorner.Parent = unlock
+
+    local paste = Instance.new("TextButton")
+    paste.Parent = card
+    paste.Position = UDim2.new(1, -50, 1, -54)
+    paste.Size = UDim2.new(0, 38, 0, 36)
+    paste.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
+    paste.Text = "PASTE"
+    paste.TextColor3 = Color3.fromRGB(220, 225, 235)
+    paste.Font = Enum.Font.GothamBold
+    paste.TextSize = 9
+    paste.AutoButtonColor = false
+    local pasteCorner = Instance.new("UICorner")
+    pasteCorner.CornerRadius = UDim.new(0, 7)
+    pasteCorner.Parent = paste
+
+    local function normalize(value)
+        return tostring(value or ""):gsub("^%s*(.-)%s*$", "%1"):upper():sub(1, 96)
+    end
+    function gate:SetKey(key)
+        input.Text = tostring(key or "")
+        return input.Text
+    end
+    function gate:Validate(key)
+        if not self.Alive or self.Unlocked then return self.Unlocked end
+        local normalized = normalize(key)
+        local valid = false
+        if type(options.Validate) == "function" then
+            local ok, result = pcall(options.Validate, normalized)
+            valid = ok and result == true
+        else
+            valid = allowedKeys[normalized] == true
+        end
+        if valid then
+            self.Unlocked = true
+            Environment.EmperUI_KeyGate = nil
+            status.TextColor3 = Color3.fromRGB(70, 235, 150)
+            status.Text = "Access granted"
+            if self.RememberKey then Environment.EmperUI_RememberedKey = normalized end
+            self:Hide()
+            if Environment.EmperUI_GatedWindows then
+                for _, gatedWindow in ipairs(Environment.EmperUI_GatedWindows) do
+                    pcall(function() gatedWindow:Show() end)
+                end
+                Environment.EmperUI_GatedWindows = nil
+            end
+            if type(options.OnSuccess) == "function" then task.spawn(options.OnSuccess, normalized) end
+        else
+            status.TextColor3 = Color3.fromRGB(255, 90, 100)
+            status.Text = "Invalid key"
+            if type(options.OnFailed) == "function" then task.spawn(options.OnFailed, normalized) end
+        end
+        return valid
+    end
+    function gate:Show()
+        if self.Alive and not self.Unlocked then gui.Enabled = true end
+        return self
+    end
+    function gate:Hide()
+        gui.Enabled = false
+        return self
+    end
+    function gate:IsUnlocked()
+        return self.Unlocked == true
+    end
+    function gate:Destroy()
+        self.Alive = false
+        if gui then gui:Destroy() end
+    end
+
+    unlock.MouseButton1Click:Connect(function() gate:Validate(input.Text) end)
+    input.FocusLost:Connect(function(enterPressed) if enterPressed then gate:Validate(input.Text) end end)
+    paste.MouseButton1Click:Connect(function()
+        local getter = getclipboard or get_clipboard
+        if type(getter) == "function" then
+            local ok, value = pcall(getter)
+            if ok then gate:SetKey(value) end
+        else
+            status.Text = "Clipboard unavailable"
+        end
+    end)
+
+    local remembered = Environment.EmperUI_RememberedKey
+    if gate.RememberKey and remembered and gate:Validate(remembered) then
+        return gate
+    end
+    Environment.EmperUI_KeyGate = gate
+    gate:Show()
+    return gate
 end
 
 function EmperUI:CreateWindow(options)
     -- ป้องกัน UI ซ้อนทับ (ปิดอันเก่าก่อนสร้างอันใหม่)
-    if getgenv().EmperUI_Instance then
-        pcall(function() getgenv().EmperUI_Instance:Destroy() end)
+    if Environment.EmperUI_WindowCleanup then
+        pcall(Environment.EmperUI_WindowCleanup)
+    elseif Environment.EmperUI_Instance then
+        pcall(function() Environment.EmperUI_Instance:Destroy() end)
     end
 
     options = options or {}
     local WindowTitle = options.Title or "PREMIUM HUB"
     local WindowIcon = options.Icon or "rbxassetid://11681541018"
     local WindowSize = options.Size or UDim2.new(0, 680, 0, 450)
-    local WindowObj = { Tabs = {}, ConfigElements = {} }
+    local WindowObj = {
+        Tabs = {},
+        ConfigElements = {},
+        Connections = {},
+        Alive = true,
+        WatermarkGeneration = 0,
+        AuroraGeneration = 0,
+        MotionEnabled = options.MotionEnabled ~= false,
+        MotionSpeed = math.max(0.25, tonumber(options.MotionSpeed) or 1),
+        TouchMode = options.TouchMode ~= false,
+        TouchPadding = math.clamp(tonumber(options.TouchPadding) or 6, 0, 16),
+        ControlScale = math.clamp(tonumber(options.ControlScale) or 1, 0.85, 1.25),
+        ControlRadius = math.clamp(tonumber(options.ControlRadius) or 6, 0, 16),
+        ControlSpacing = math.clamp(tonumber(options.ControlSpacing) or 10, 2, 20),
+    }
+
+    function WindowObj:Connect(signal, callback)
+        local connection = signal:Connect(callback)
+        table.insert(self.Connections, connection)
+        return connection
+    end
+
+    function WindowObj:SetMotionEnabled(enabled)
+        self.MotionEnabled = enabled == true
+        return self.MotionEnabled
+    end
+
+    function WindowObj:GetMotionEnabled()
+        return self.MotionEnabled == true
+    end
+
+    function WindowObj:SetMotionSpeed(multiplier)
+        local value = tonumber(multiplier) or 1
+        self.MotionSpeed = math.clamp(value, 0.25, 3)
+        return self.MotionSpeed
+    end
+
+    function WindowObj:GetMotionSpeed()
+        return self.MotionSpeed or 1
+    end
+
+    function WindowObj:SetTouchMode(enabled)
+        self.TouchMode = enabled == true
+        return self.TouchMode
+    end
+
+    function WindowObj:GetTouchMode()
+        return self.TouchMode == true
+    end
+
+    function WindowObj:SetTouchPadding(value)
+        self.TouchPadding = math.clamp(tonumber(value) or 6, 0, 16)
+        return self.TouchPadding
+    end
+
+    function WindowObj:GetTouchPadding()
+        return self.TouchPadding or 6
+    end
+
+    function WindowObj:SetControlScale(value)
+        self.ControlScale = math.clamp(tonumber(value) or 1, 0.85, 1.25)
+        return self.ControlScale
+    end
+
+    function WindowObj:GetControlScale()
+        return self.ControlScale or 1
+    end
+
+    function WindowObj:SetControlRadius(value)
+        self.ControlRadius = math.clamp(tonumber(value) or 6, 0, 16)
+        return self.ControlRadius
+    end
+
+    function WindowObj:GetControlRadius()
+        return self.ControlRadius or 6
+    end
+
+    function WindowObj:SetControlSpacing(value)
+        self.ControlSpacing = math.clamp(tonumber(value) or 10, 2, 20)
+        return self.ControlSpacing
+    end
+
+    function WindowObj:GetControlSpacing()
+        return self.ControlSpacing or 10
+    end
+
+    WindowObj.ControlPresets = {
+        Default = {Scale = 1, Radius = 6, Spacing = 10, Theme = "Default"},
+        Compact = {Scale = 0.9, Radius = 4, Spacing = 6, Theme = "Midnight"},
+        Glass = {Scale = 1, Radius = 10, Spacing = 10, Theme = "Ocean"},
+        Mobile = {Scale = 1.12, Radius = 9, Spacing = 12, Theme = "Default"},
+    }
+
+    function WindowObj:GetControlPresets()
+        local names = {}
+        for name in pairs(self.ControlPresets) do table.insert(names, name) end
+        table.sort(names)
+        return names
+    end
+
+    function WindowObj:ApplyControlPreset(name)
+        local preset = self.ControlPresets[tostring(name or "")]
+        if not preset then return false end
+        self:SetControlScale(preset.Scale)
+        self:SetControlRadius(preset.Radius)
+        self:SetControlSpacing(preset.Spacing)
+        if preset.Theme and EmperUI.Themes[preset.Theme] then self:SetTheme(preset.Theme) end
+        return true
+    end
+
+    function WindowObj:Tween(instance, info, properties)
+        if not self:GetMotionEnabled() then
+            for property, value in pairs(properties) do
+                pcall(function() instance[property] = value end)
+            end
+            return nil
+        end
+        local speed = self:GetMotionSpeed()
+        local duration = (info and info.Time or 0.2) / speed
+        local tweenInfo = TweenInfo.new(duration, info and info.EasingStyle or Enum.EasingStyle.Quad, info and info.EasingDirection or Enum.EasingDirection.Out)
+        local tween = TweenService:Create(instance, tweenInfo, properties)
+        tween:Play()
+        return tween
+    end
+
+    local function DisconnectAll()
+        for _, connection in ipairs(WindowObj.Connections) do
+            pcall(function()
+                connection:Disconnect()
+            end)
+        end
+        table.clear(WindowObj.Connections)
+    end
+
+    local function GetConfigKey(componentOptions, fallback)
+        if type(componentOptions) == "table" then
+            local customKey = componentOptions.Flag or componentOptions.ConfigKey
+            if customKey ~= nil and tostring(customKey) ~= "" then
+                return tostring(customKey)
+            end
+        end
+        return tostring(fallback)
+    end
     
     local Theme = {
         Background = Color3.fromRGB(15, 15, 20),
@@ -342,20 +845,236 @@ function EmperUI:CreateWindow(options)
         end
     end
 
+    function WindowObj:GetThemeColors()
+        local colors = {}
+        for key, color in pairs(Theme) do colors[key] = color end
+        return colors
+    end
+
+    function WindowObj:SetThemeColor(key, color)
+        if type(key) ~= "string" or typeof(color) ~= "Color3" or not Theme[key] then return false end
+        Theme[key] = color
+        for _, data in ipairs(WindowObj.ThemeObjects) do
+            if data.ThemeKey == key and data.Instance and data.Instance.Parent then
+                WindowObj:Tween(data.Instance, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {[data.Property] = color})
+            end
+        end
+        return true
+    end
+
+    local function SanitizeThemeName(name)
+        local cleaned = tostring(name or ""):match("^%s*(.-)%s*$") or ""
+        return cleaned:gsub("[^%w_%-]", "")
+    end
+
+    local function ThemeFolder(folderName)
+        return tostring(folderName or "EmperUI_Themes")
+    end
+
+    function WindowObj:SaveTheme(folderName, themeName)
+        if not isfolder or not writefile then return false end
+        local safeName = SanitizeThemeName(themeName)
+        if safeName == "" then return false end
+        folderName = ThemeFolder(folderName)
+        if not isfolder(folderName) and makefolder then pcall(makefolder, folderName) end
+        local data = {}
+        for key, color in pairs(Theme) do
+            data[key] = {R = color.R, G = color.G, B = color.B}
+        end
+        local ok, encoded = pcall(HttpService.JSONEncode, HttpService, data)
+        if not ok then return false end
+        return pcall(writefile, folderName .. "/" .. safeName .. ".json", encoded)
+    end
+
+    function WindowObj:LoadTheme(folderName, themeName)
+        if not isfile or not readfile then return false end
+        local safeName = SanitizeThemeName(themeName)
+        if safeName == "" then return false end
+        local path = ThemeFolder(folderName) .. "/" .. safeName .. ".json"
+        if not isfile(path) then return false end
+        local ok, data = pcall(function() return HttpService:JSONDecode(readfile(path)) end)
+        if not ok or type(data) ~= "table" then return false end
+        for key, value in pairs(data) do
+            if Theme[key] and type(value) == "table" then
+                self:SetThemeColor(key, Color3.new(tonumber(value.R) or 0, tonumber(value.G) or 0, tonumber(value.B) or 0))
+            end
+        end
+        return true
+    end
+
+    function WindowObj:DeleteTheme(folderName, themeName)
+        if not isfile or not delfile then return false end
+        local safeName = SanitizeThemeName(themeName)
+        if safeName == "" then return false end
+        local path = ThemeFolder(folderName) .. "/" .. safeName .. ".json"
+        if not isfile(path) then return false end
+        return pcall(delfile, path)
+    end
+
+    function WindowObj:GetThemes(folderName)
+        if not isfolder or not listfiles then return {} end
+        folderName = ThemeFolder(folderName)
+        if not isfolder(folderName) and makefolder then pcall(makefolder, folderName) end
+        local names = {}
+        pcall(function()
+            for _, file in ipairs(listfiles(folderName)) do
+                local name = file:match("([^/\\]+)%.json$")
+                if name then table.insert(names, name) end
+            end
+        end)
+        table.sort(names)
+        return names
+    end
+
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = RandomName()
     ScreenGui.Parent = TargetParent
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
-    
+
+    WindowObj.ScreenGui = ScreenGui
+
+    local function CleanupState()
+        if not WindowObj.Alive then return end
+        WindowObj.Alive = false
+        WindowObj.WatermarkGeneration = WindowObj.WatermarkGeneration + 1
+        WindowObj.AuroraGeneration = WindowObj.AuroraGeneration + 1
+        DisconnectAll()
+
+        if Environment.EmperUI_Instance == ScreenGui then
+            Environment.EmperUI_Instance = nil
+            Environment.EmperUI_WindowCleanup = nil
+        end
+    end
+
+    function WindowObj:Destroy()
+        CleanupState()
+        if ScreenGui.Parent then
+            ScreenGui:Destroy()
+        end
+    end
+
+    local destroyingConnection = ScreenGui.Destroying:Connect(CleanupState)
+    table.insert(WindowObj.Connections, destroyingConnection)
+
     -- เก็บอ้างอิงไว้เพื่อใช้ลบตอนรัน UI ซ้อน
-    getgenv().EmperUI_Instance = ScreenGui
+    Environment.EmperUI_Instance = ScreenGui
+    Environment.EmperUI_WindowCleanup = function()
+        WindowObj:Destroy()
+    end
+
+    -- Shared tooltip layer (one tooltip per window)
+    local TooltipFrame = Instance.new("Frame")
+    TooltipFrame.Name = "Tooltip"
+    TooltipFrame.Parent = ScreenGui
+    TooltipFrame.BackgroundColor3 = Color3.fromRGB(14, 15, 20)
+    TooltipFrame.BackgroundTransparency = 0.04
+    TooltipFrame.BorderSizePixel = 0
+    TooltipFrame.Size = UDim2.new(0, 180, 0, 34)
+    TooltipFrame.Visible = false
+    TooltipFrame.ZIndex = 1000
+
+    local TooltipCorner = Instance.new("UICorner")
+    TooltipCorner.CornerRadius = UDim.new(0, 6)
+    TooltipCorner.Parent = TooltipFrame
+
+    local TooltipStroke = Instance.new("UIStroke")
+    TooltipStroke.Color = Color3.fromRGB(70, 73, 88)
+    TooltipStroke.Thickness = 1
+    TooltipStroke.Transparency = 0.2
+    TooltipStroke.Parent = TooltipFrame
+
+    local TooltipLabel = Instance.new("TextLabel")
+    TooltipLabel.Parent = TooltipFrame
+    TooltipLabel.BackgroundTransparency = 1
+    TooltipLabel.Position = UDim2.new(0, 9, 0, 6)
+    TooltipLabel.Size = UDim2.new(1, -18, 1, -12)
+    TooltipLabel.Font = Enum.Font.Gotham
+    TooltipLabel.TextColor3 = Color3.fromRGB(225, 227, 238)
+    TooltipLabel.TextSize = 11
+    TooltipLabel.TextWrapped = true
+    TooltipLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TooltipLabel.TextYAlignment = Enum.TextYAlignment.Top
+    TooltipLabel.ZIndex = 1001
+
+    local tooltipToken = 0
+    local tooltipVisible = false
+
+    local function PositionTooltip(position)
+        local camera = workspace.CurrentCamera
+        local viewport = camera and camera.ViewportSize or Vector2.new(1920, 1080)
+        local width = TooltipFrame.AbsoluteSize.X
+        local height = TooltipFrame.AbsoluteSize.Y
+        local x = math.clamp(position.X + 14, 8, math.max(8, viewport.X - width - 8))
+        local y = math.clamp(position.Y + 16, 8, math.max(8, viewport.Y - height - 8))
+        TooltipFrame.Position = UDim2.fromOffset(x, y)
+    end
+
+    local function ShowTooltip(text, position)
+        if not WindowObj.Alive or not text or tostring(text) == "" then return end
+        text = tostring(text)
+        local bounds = TextService:GetTextSize(text, 11, Enum.Font.Gotham, Vector2.new(250, 1000))
+        local width = math.clamp(bounds.X + 18, 130, 268)
+        local wrappedBounds = TextService:GetTextSize(text, 11, Enum.Font.Gotham, Vector2.new(width - 18, 1000))
+        local height = math.clamp(wrappedBounds.Y + 12, 30, 120)
+        TooltipFrame.Size = UDim2.fromOffset(width, height)
+        TooltipLabel.Text = text
+        TooltipFrame.Visible = true
+        tooltipVisible = true
+        PositionTooltip(position or UserInputService:GetMouseLocation())
+    end
+
+    function WindowObj:HideTooltip()
+        tooltipToken = tooltipToken + 1
+        tooltipVisible = false
+        TooltipFrame.Visible = false
+    end
+
+    function WindowObj:AttachTooltip(guiObject, text)
+        if not guiObject or not text or tostring(text) == "" then return end
+        guiObject.Active = true
+
+        WindowObj:Connect(guiObject.MouseEnter, function()
+            tooltipToken = tooltipToken + 1
+            local token = tooltipToken
+            task.delay(0.35, function()
+                if token == tooltipToken and guiObject.Parent and guiObject.Visible then
+                    ShowTooltip(text, UserInputService:GetMouseLocation())
+                end
+            end)
+        end)
+        WindowObj:Connect(guiObject.MouseLeave, function()
+            WindowObj:HideTooltip()
+        end)
+        WindowObj:Connect(guiObject.InputBegan, function(input)
+            if input.UserInputType ~= Enum.UserInputType.Touch then return end
+            tooltipToken = tooltipToken + 1
+            local token = tooltipToken
+            task.delay(0.55, function()
+                if token == tooltipToken and guiObject.Parent and guiObject.Visible then
+                    ShowTooltip(text, input.Position)
+                end
+            end)
+        end)
+        WindowObj:Connect(guiObject.InputEnded, function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                WindowObj:HideTooltip()
+            end
+        end)
+    end
+
+    WindowObj:Connect(UserInputService.InputChanged, function(input)
+        if tooltipVisible and input.UserInputType == Enum.UserInputType.MouseMovement then
+            PositionTooltip(input.Position)
+        end
+    end)
 
     local DropShadow = Instance.new("ImageLabel")
     DropShadow.Name = "DropShadow"
     DropShadow.Parent = ScreenGui
     DropShadow.BackgroundTransparency = 1
-    DropShadow.Position = UDim2.new(0.5, -WindowSize.X.Offset/2 - 25, 0.5, -WindowSize.Y.Offset/2 - 25)
+    DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    DropShadow.Position = UDim2.new(0.5, 0, 0.5, 4)
     DropShadow.Size = UDim2.new(0, WindowSize.X.Offset + 50, 0, WindowSize.Y.Offset + 50)
     DropShadow.Image = "rbxassetid://6015897843"
     DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -367,10 +1086,69 @@ function EmperUI:CreateWindow(options)
     MainFrame.Parent = ScreenGui
     WindowObj:ApplyTheme(MainFrame, "BackgroundColor3", "Background")
     MainFrame.BackgroundTransparency = 0.15
-    MainFrame.Position = UDim2.new(0.5, -WindowSize.X.Offset/2, 0.5, -WindowSize.Y.Offset/2)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.Size = WindowSize
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
+
+    WindowObj.Language = options.Language or "English"
+    WindowObj.LanguageDictionaries = {}
+    for languageName, dictionary in pairs(EmperUI.Languages or {}) do
+        WindowObj.LanguageDictionaries[languageName] = dictionary
+    end
+    WindowObj.LocalizationOriginal = setmetatable({}, {__mode = "k"})
+
+    function WindowObj:AddLanguage(languageName, dictionary)
+        if type(languageName) ~= "string" or type(dictionary) ~= "table" then
+            return false
+        end
+        self.LanguageDictionaries[languageName] = dictionary
+        return true
+    end
+
+    function WindowObj:Translate(key, fallback)
+        local dictionary = self.LanguageDictionaries[self.Language] or {}
+        return dictionary[key] or fallback or key
+    end
+
+    function WindowObj:SetLanguage(languageName)
+        if type(languageName) ~= "string" then return false end
+        local aliases = {
+            th = "Thai",
+            thai = "Thai",
+            en = "English",
+            english = "English",
+        }
+        local normalized = aliases[languageName:lower()] or languageName
+        local dictionary = self.LanguageDictionaries[normalized]
+        if not dictionary then return false end
+
+        self.Language = normalized
+        for _, object in ipairs(MainFrame:GetDescendants()) do
+            if object:IsA("TextLabel") or object:IsA("TextButton") then
+                local original = self.LocalizationOriginal[object]
+                if original == nil then
+                    original = object.Text
+                    self.LocalizationOriginal[object] = original
+                end
+                object.Text = dictionary[original] or original
+            elseif object:IsA("TextBox") then
+                local original = self.LocalizationOriginal[object]
+                if type(original) ~= "table" then
+                    original = {Text = object.Text, Placeholder = object.PlaceholderText}
+                    self.LocalizationOriginal[object] = original
+                end
+                object.Text = dictionary[original.Text] or original.Text
+                object.PlaceholderText = dictionary[original.Placeholder] or original.Placeholder
+            end
+        end
+        return true
+    end
+
+    function WindowObj:GetLanguage()
+        return self.Language
+    end
     
     local BackgroundImage = Instance.new("ImageLabel")
     BackgroundImage.Name = "BackgroundImage"
@@ -418,18 +1196,74 @@ function EmperUI:CreateWindow(options)
     })
     StrokeGradient.Parent = MainStroke
 
-    task.spawn(function()
-        local runService = game:GetService("RunService")
-        local rot = 0
-        runService.RenderStepped:Connect(function(dt)
-            rot = (rot + dt * 60) % 360
-            StrokeGradient.Rotation = rot
-        end)
+    local runService = game:GetService("RunService")
+    local strokeRotation = 0
+    WindowObj:Connect(runService.RenderStepped, function(dt)
+        if not WindowObj.Alive then return end
+        strokeRotation = (strokeRotation + dt * 60) % 360
+        StrokeGradient.Rotation = strokeRotation
     end)
 
     local MainScale = Instance.new("UIScale")
     MainScale.Parent = MainFrame
-    MainScale.Scale = 1
+    local MinScale = tonumber(options.MinScale) or 0.35
+    local MaxScale = tonumber(options.MaxScale) or 2.5
+    local UserScale = math.clamp(tonumber(options.Scale) or 1, MinScale, MaxScale)
+    local FitScale = 1
+    local cameraViewportConnection
+
+    local function ApplyCombinedScale()
+        MainScale.Scale = math.clamp(UserScale * FitScale, MinScale, MaxScale)
+    end
+
+    local function UpdateResponsiveScale()
+        local camera = workspace.CurrentCamera
+        if options.AutoScale == false or not camera then
+            FitScale = 1
+        else
+            local viewport = camera.ViewportSize
+            local availableWidth = math.max(1, viewport.X - 32)
+            local availableHeight = math.max(1, viewport.Y - 32)
+            FitScale = math.min(
+                1,
+                availableWidth / math.max(1, WindowSize.X.Offset),
+                availableHeight / math.max(1, WindowSize.Y.Offset)
+            )
+        end
+        ApplyCombinedScale()
+    end
+
+    local function BindCurrentCamera()
+        if cameraViewportConnection then
+            cameraViewportConnection:Disconnect()
+            cameraViewportConnection = nil
+        end
+        local camera = workspace.CurrentCamera
+        if camera then
+            cameraViewportConnection = WindowObj:Connect(
+                camera:GetPropertyChangedSignal("ViewportSize"),
+                UpdateResponsiveScale
+            )
+        end
+        UpdateResponsiveScale()
+    end
+
+    function WindowObj:SetScale(value)
+        UserScale = math.clamp(tonumber(value) or UserScale, MinScale, MaxScale)
+        ApplyCombinedScale()
+        return UserScale
+    end
+
+    function WindowObj:GetScale()
+        return UserScale
+    end
+
+    function WindowObj:GetAppliedScale()
+        return MainScale.Scale
+    end
+
+    WindowObj:Connect(workspace:GetPropertyChangedSignal("CurrentCamera"), BindCurrentCamera)
+    BindCurrentCamera()
 
     local Topbar = Instance.new("Frame")
     Topbar.Parent = MainFrame
@@ -480,7 +1314,7 @@ function EmperUI:CreateWindow(options)
     ClockLabel.Text = "00:00:00 AM"
     
     task.spawn(function()
-        while task.wait(1) do
+        while WindowObj.Alive and ClockLabel.Parent and task.wait(1) do
             local timeT = os.date("*t")
             local hour = timeT.hour % 12
             if hour == 0 then hour = 12 end
@@ -494,7 +1328,7 @@ function EmperUI:CreateWindow(options)
         local DiscordBtn = Instance.new("ImageButton")
         DiscordBtn.Parent = Topbar
         DiscordBtn.BackgroundTransparency = 1
-        DiscordBtn.Position = UDim2.new(1, -36, 0.5, -9)
+        DiscordBtn.Position = UDim2.new(1, -145, 0.5, -9)
         DiscordBtn.Size = UDim2.new(0, 18, 0, 18)
         DiscordBtn.Image = "rbxassetid://11681580226" -- Default link icon (Change to Discord ID later)
         WindowObj:ApplyTheme(DiscordBtn, "ImageColor3", "TextMuted")
@@ -580,36 +1414,163 @@ function EmperUI:CreateWindow(options)
     local MobileIcon = Instance.new("ImageButton")
     MobileIcon.Parent = ScreenGui
     WindowObj:ApplyTheme(MobileIcon, "BackgroundColor3", "Background")
-    MobileIcon.Position = UDim2.new(0.5, -25, 0, 20)
-    MobileIcon.Size = UDim2.new(0, 50, 0, 50)
+    MobileIcon.BackgroundTransparency = 0.05
+    MobileIcon.Position = UDim2.new(0.5, -75, 0, 20)
+    MobileIcon.Size = UDim2.new(0, 150, 0, 48)
     MobileIcon.Visible = false
     MobileIcon.ZIndex = 100
     MobileIcon.AutoButtonColor = false
-    MobileIcon.ClipsDescendants = true
+    MobileIcon.ClipsDescendants = false
 
     local MobileIconCorner = Instance.new("UICorner")
-    MobileIconCorner.CornerRadius = UDim.new(0, 10)
+    MobileIconCorner.CornerRadius = UDim.new(1, 0)
     MobileIconCorner.Parent = MobileIcon
 
     local MobileIconStroke = Instance.new("UIStroke")
     WindowObj:ApplyTheme(MobileIconStroke, "Color", "Accent")
-    MobileIconStroke.Thickness = 2
+    MobileIconStroke.Thickness = 1.5
+    MobileIconStroke.Transparency = 0.05
     MobileIconStroke.Parent = MobileIcon
+    local MobileIconGradient = Instance.new("UIGradient")
+    MobileIconGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 240, 210)),
+        ColorSequenceKeypoint.new(0.52, Color3.fromRGB(80, 230, 180)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(245, 35, 220)),
+    })
+    MobileIconGradient.Parent = MobileIconStroke
+
+    local MobileShadow = Instance.new("ImageLabel")
+    MobileShadow.Parent = MobileIcon
+    MobileShadow.BackgroundTransparency = 1
+    MobileShadow.Position = UDim2.new(0, -2, 0, -2)
+    MobileShadow.Size = UDim2.new(1, 4, 1, 4)
+    MobileShadow.Image = "rbxassetid://1316045217"
+    MobileShadow.ImageTransparency = 0.94
+    MobileShadow.ZIndex = 99
+
+    local MobileStatus = Instance.new("Frame")
+    MobileStatus.Parent = MobileIcon
+    MobileStatus.Position = UDim2.new(0, 12, 0.5, -3)
+    MobileStatus.Size = UDim2.new(0, 6, 0, 6)
+    MobileStatus.BorderSizePixel = 0
+    WindowObj:ApplyTheme(MobileStatus, "BackgroundColor3", "Accent")
+    MobileStatus.Visible = false
+    MobileStatus.ZIndex = 102
+    local MobileStatusCorner = Instance.new("UICorner")
+    MobileStatusCorner.CornerRadius = UDim.new(1, 0)
+    MobileStatusCorner.Parent = MobileStatus
     
     local MobileIconImage = Instance.new("ImageLabel")
     MobileIconImage.Parent = MobileIcon
     MobileIconImage.BackgroundTransparency = 1
-    MobileIconImage.Position = UDim2.new(0.5, -12, 0.5, -12)
-    MobileIconImage.Size = UDim2.new(0, 24, 0, 24)
-    MobileIconImage.Image = "rbxassetid://10734896206"
+    MobileIconImage.Position = UDim2.new(0, 14, 0.5, -9)
+    MobileIconImage.Size = UDim2.new(0, 18, 0, 18)
+    MobileIconImage.Image = "rbxassetid://11681541018"
+    MobileIconImage.Visible = false
     WindowObj:ApplyTheme(MobileIconImage, "ImageColor3", "Text")
+    MobileIconImage.ZIndex = 102
 
-    MakeDraggable(MobileIcon, MobileIcon)
+    local MobileGlyph = Instance.new("TextLabel")
+    MobileGlyph.Parent = MobileIcon
+    MobileGlyph.BackgroundTransparency = 1
+    MobileGlyph.Position = UDim2.new(0, 13, 0.5, -9)
+    MobileGlyph.Size = UDim2.new(0, 20, 0, 18)
+    MobileGlyph.Font = Enum.Font.GothamBold
+    MobileGlyph.Text = "✦"
+    MobileGlyph.TextSize = 18
+    MobileGlyph.TextXAlignment = Enum.TextXAlignment.Center
+    WindowObj:ApplyTheme(MobileGlyph, "TextColor3", "TextMuted")
+    MobileGlyph.ZIndex = 102
+    MobileGlyph.Visible = false
+
+    local MobileMark = Instance.new("Frame")
+    MobileMark.Parent = MobileIcon
+    MobileMark.BackgroundTransparency = 1
+    MobileMark.Position = UDim2.new(0, 13, 0.5, -8)
+    MobileMark.Size = UDim2.new(0, 20, 0, 16)
+    MobileMark.ZIndex = 102
+    local function MarkBar(y)
+        local bar = Instance.new("Frame")
+        bar.Parent = MobileMark
+        bar.BackgroundTransparency = 0.05
+        bar.BorderSizePixel = 0
+        bar.Position = UDim2.new(0, 0, 0, y)
+        bar.Size = UDim2.new(1, 0, 0, 3)
+        WindowObj:ApplyTheme(bar, "BackgroundColor3", "TextMuted")
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = bar
+        return bar
+    end
+    MarkBar(0)
+    MarkBar(6)
+    MarkBar(12)
+
+    local MobileLabel = Instance.new("TextLabel")
+    MobileLabel.Parent = MobileIcon
+    MobileLabel.BackgroundTransparency = 1
+    MobileLabel.Position = UDim2.new(0, 34, 0, 0)
+    MobileLabel.Size = UDim2.new(1, -44, 1, 0)
+    MobileLabel.Font = Enum.Font.GothamBold
+    MobileLabel.Text = WindowTitle
+    MobileLabel.TextSize = 14
+    MobileLabel.TextXAlignment = Enum.TextXAlignment.Center
+    MobileLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    WindowObj:ApplyTheme(MobileLabel, "TextColor3", "Text")
+    MobileLabel.ZIndex = 102
+
+    local minimizedButtonText = WindowTitle
+    local minimizedButtonVisible = false
+    function WindowObj:SetMinimizedButtonStyle(styleOptions)
+        styleOptions = type(styleOptions) == "table" and styleOptions or {}
+        if styleOptions.Width or styleOptions.Height then
+            MobileIcon.Size = UDim2.new(0, tonumber(styleOptions.Width) or 86, 0, tonumber(styleOptions.Height) or 42)
+        end
+        if styleOptions.BackgroundTransparency then MobileIcon.BackgroundTransparency = math.clamp(tonumber(styleOptions.BackgroundTransparency) or 0.08, 0, 1) end
+        if styleOptions.Text then self:SetMinimizedButtonText(styleOptions.Text) end
+        if styleOptions.Position then MobileIcon.Position = styleOptions.Position end
+        return MobileIcon
+    end
+    function WindowObj:SetMinimizedButtonText(text)
+        minimizedButtonText = tostring(text or "OPEN")
+        MobileLabel.Text = minimizedButtonText
+        return minimizedButtonText
+    end
+    function WindowObj:SetMinimizedButtonVisible(visible)
+        minimizedButtonVisible = visible == true
+        MobileIcon.Visible = minimizedButtonVisible
+        return minimizedButtonVisible
+    end
+    function WindowObj:GetMinimizedButton()
+        return MobileIcon
+    end
+
+    MakeDraggable(MobileIcon, MobileIcon, WindowObj)
+
+    MobileIcon.MouseEnter:Connect(function()
+        WindowObj:Tween(MobileIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0, Size = UDim2.new(0, 154, 0, 50)})
+        WindowObj:Tween(MobileIconStroke, TweenInfo.new(0.18), {Thickness = 2})
+    end)
+    MobileIcon.MouseLeave:Connect(function()
+        WindowObj:Tween(MobileIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.05, Size = UDim2.new(0, 150, 0, 48)})
+        WindowObj:Tween(MobileIconStroke, TweenInfo.new(0.18), {Thickness = 1.5})
+    end)
+    MobileIcon.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or (WindowObj:GetTouchMode() and input.UserInputType == Enum.UserInputType.Touch) then
+            WindowObj:Tween(MobileIcon, TweenInfo.new(0.08), {Size = UDim2.new(0, 146, 0, 46)})
+        end
+    end)
+    MobileIcon.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            WindowObj:Tween(MobileIcon, TweenInfo.new(0.14), {Size = UDim2.new(0, 150, 0, 48)})
+        end
+    end)
 
     local isMinimized = false
     
     MobileIcon.MouseButton1Click:Connect(function()
         isMinimized = false
+        minimizedButtonVisible = false
         MobileIcon.Visible = false
         MainFrame.Visible = true
         DropShadow.Visible = true
@@ -619,6 +1580,7 @@ function EmperUI:CreateWindow(options)
         isMinimized = true
         MainFrame.Visible = false
         DropShadow.Visible = false
+        minimizedButtonVisible = true
         MobileIcon.Visible = true
     end)
     local isMaximized = false
@@ -637,22 +1599,19 @@ function EmperUI:CreateWindow(options)
     CreateControlButton("rbxassetid://10747384394", Color3.fromRGB(255, 75, 75), function()
         WindowObj:ShowDialog("Close UI", "Are you sure you want to close the Hub?", {"Yes", "Cancel"}, function(choice)
             if choice == "Yes" then
-                ScreenGui:Destroy()
+                WindowObj:Destroy()
             end
         end)
     end)
 
-    MakeDraggable(Topbar, MainFrame)
+    MakeDraggable(Topbar, MainFrame, WindowObj)
     
     local function UpdateShadow()
         local scale = MainScale.Scale
         local width = MainFrame.Size.X.Offset * scale
         local height = MainFrame.Size.Y.Offset * scale
         DropShadow.Size = UDim2.new(0, width + 50, 0, height + 50)
-        DropShadow.Position = UDim2.new(
-            MainFrame.Position.X.Scale, MainFrame.Position.X.Offset - 25,
-            MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset - 25
-        )
+        DropShadow.Position = MainFrame.Position + UDim2.fromOffset(0, 4)
     end
     MainScale:GetPropertyChangedSignal("Scale"):Connect(UpdateShadow)
     MainFrame:GetPropertyChangedSignal("Size"):Connect(UpdateShadow)
@@ -677,22 +1636,21 @@ function EmperUI:CreateWindow(options)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             Resizing = true
             ResizeStart = input.Position
-            StartScale = MainScale.Scale
+            StartScale = UserScale
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
+    WindowObj:Connect(UserInputService.InputChanged, function(input)
         if Resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - ResizeStart
             local baseWidth = WindowSize.X.Offset
             local scaleDelta = delta.X / baseWidth
-            local targetScale = math.clamp(StartScale + scaleDelta, 0.4, 2.5)
-            
-            MainScale.Scale = targetScale
+            local targetScale = math.clamp(StartScale + scaleDelta, MinScale, MaxScale)
+            WindowObj:SetScale(targetScale)
         end
     end)
     
-    UserInputService.InputEnded:Connect(function(input)
+    WindowObj:Connect(UserInputService.InputEnded, function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             Resizing = false
         end
@@ -700,10 +1658,38 @@ function EmperUI:CreateWindow(options)
 
     WindowObj.ToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    function WindowObj:SetVisible(visible)
+        local state = visible == true
+        if not state then
+            self:HideTooltip()
+        end
+        MainFrame.Visible = state
+        DropShadow.Visible = state
+        if not state then
+            MobileIcon.Visible = false
+        end
+        return state
+    end
+
+    function WindowObj:Show()
+        return self:SetVisible(true)
+    end
+
+    function WindowObj:Hide()
+        return self:SetVisible(false)
+    end
+
+    function WindowObj:Toggle()
+        return self:SetVisible(not MainFrame.Visible)
+    end
+
+    function WindowObj:IsVisible()
+        return MainFrame.Visible
+    end
+
+    WindowObj:Connect(UserInputService.InputBegan, function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == WindowObj.ToggleKey then
-            MainFrame.Visible = not MainFrame.Visible
-            DropShadow.Visible = MainFrame.Visible
+            WindowObj:Toggle()
         end
     end)
 
@@ -748,6 +1734,65 @@ function EmperUI:CreateWindow(options)
     SidebarLogoStroke.Thickness = 2
     SidebarLogoStroke.Parent = SidebarLogo
 
+    local SearchFrame = Instance.new("Frame")
+    SearchFrame.Name = "SearchFrame"
+    SearchFrame.Parent = Sidebar
+    WindowObj:ApplyTheme(SearchFrame, "BackgroundColor3", "ElementBg")
+    SearchFrame.Position = UDim2.new(0, 12, 0, 122)
+    SearchFrame.Size = UDim2.new(1, -24, 0, 30)
+    SearchFrame.BorderSizePixel = 0
+
+    local SearchCorner = Instance.new("UICorner")
+    SearchCorner.CornerRadius = UDim.new(0, 6)
+    SearchCorner.Parent = SearchFrame
+
+    local SearchStroke = Instance.new("UIStroke")
+    WindowObj:ApplyTheme(SearchStroke, "Color", "Border")
+    SearchStroke.Thickness = 1
+    SearchStroke.Parent = SearchFrame
+
+    local SearchIcon = Instance.new("Frame")
+    SearchIcon.Parent = SearchFrame
+    SearchIcon.BackgroundTransparency = 1
+    SearchIcon.Position = UDim2.new(0, 7, 0, 5)
+    SearchIcon.Size = UDim2.new(0, 18, 0, 20)
+
+    local SearchCircle = Instance.new("Frame")
+    SearchCircle.Parent = SearchIcon
+    SearchCircle.BackgroundTransparency = 1
+    SearchCircle.Position = UDim2.new(0, 1, 0, 3)
+    SearchCircle.Size = UDim2.new(0, 9, 0, 9)
+    local SearchCircleCorner = Instance.new("UICorner")
+    SearchCircleCorner.CornerRadius = UDim.new(1, 0)
+    SearchCircleCorner.Parent = SearchCircle
+    local SearchCircleStroke = Instance.new("UIStroke")
+    WindowObj:ApplyTheme(SearchCircleStroke, "Color", "TextMuted")
+    SearchCircleStroke.Thickness = 1.5
+    SearchCircleStroke.Parent = SearchCircle
+
+    local SearchHandle = Instance.new("Frame")
+    SearchHandle.Parent = SearchIcon
+    SearchHandle.Position = UDim2.new(0, 10, 0, 12)
+    SearchHandle.Size = UDim2.new(0, 6, 0, 1)
+    SearchHandle.Rotation = 45
+    SearchHandle.BorderSizePixel = 0
+    WindowObj:ApplyTheme(SearchHandle, "BackgroundColor3", "TextMuted")
+
+    local SearchBox = Instance.new("TextBox")
+    SearchBox.Parent = SearchFrame
+    SearchBox.BackgroundTransparency = 1
+    SearchBox.Position = UDim2.new(0, 28, 0, 0)
+    SearchBox.Size = UDim2.new(1, -34, 1, 0)
+    SearchBox.ClearTextOnFocus = false
+    SearchBox.Font = Enum.Font.Gotham
+    SearchBox.PlaceholderText = "Search tabs..."
+    SearchBox.Text = ""
+    SearchBox.TextSize = 11
+    SearchBox.TextXAlignment = Enum.TextXAlignment.Left
+    WindowObj:ApplyTheme(SearchBox, "TextColor3", "Text")
+    WindowObj:ApplyTheme(SearchBox, "PlaceholderColor3", "TextMuted")
+    WindowObj.SearchBox = SearchBox
+
     local GlobalIndicator = Instance.new("Frame")
     GlobalIndicator.Name = "GlobalIndicator"
     GlobalIndicator.Parent = Sidebar
@@ -762,12 +1807,17 @@ function EmperUI:CreateWindow(options)
     GlobalIndCorner.CornerRadius = UDim.new(1, 0)
     GlobalIndCorner.Parent = GlobalIndicator
 
-    local TabContainer = Instance.new("Frame")
+    local TabContainer = Instance.new("ScrollingFrame")
     TabContainer.Name = "TabContainer"
     TabContainer.Parent = Sidebar
     TabContainer.BackgroundTransparency = 1
-    TabContainer.Size = UDim2.new(1, 0, 1, 0)
+    TabContainer.Position = UDim2.new(0, 0, 0, 164)
+    TabContainer.Size = UDim2.new(1, 0, 1, -176)
     TabContainer.BorderSizePixel = 0
+    TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabContainer.ScrollBarThickness = 2
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+    WindowObj:ApplyTheme(TabContainer, "ScrollBarImageColor3", "Accent")
 
     local TabListLayout = Instance.new("UIListLayout")
     TabListLayout.Parent = TabContainer
@@ -777,9 +1827,15 @@ function EmperUI:CreateWindow(options)
 
     local TabPadding = Instance.new("UIPadding")
     TabPadding.Parent = TabContainer
-    TabPadding.PaddingTop = UDim.new(0, 124)
+    TabPadding.PaddingTop = UDim.new(0, 0)
     TabPadding.PaddingLeft = UDim.new(0, 12)
     TabPadding.PaddingRight = UDim.new(0, 12)
+
+    local function UpdateTabCanvas()
+        TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabListLayout.AbsoluteContentSize.Y + 8)
+    end
+    TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateTabCanvas)
+    UpdateTabCanvas()
 
     local ContentArea = Instance.new("Frame")
     ContentArea.Parent = MainFrame
@@ -797,6 +1853,81 @@ function EmperUI:CreateWindow(options)
     WindowObj:ApplyTheme(ContentStroke, "Color", "Border")
     ContentStroke.Thickness = 1
     ContentStroke.Parent = ContentArea
+
+    SearchBox.Focused:Connect(function()
+        TweenService:Create(SearchStroke, TweenInfo.new(0.18), {Color = Theme.Accent}):Play()
+    end)
+    SearchBox.FocusLost:Connect(function()
+        TweenService:Create(SearchStroke, TweenInfo.new(0.18), {Color = Theme.Border}):Play()
+    end)
+
+    local function UpdateSelectedIndicator()
+        local selectedTab
+        for _, tab in ipairs(WindowObj.Tabs) do
+            if tab.Selected then
+                selectedTab = tab
+                break
+            end
+        end
+
+        if not selectedTab or not selectedTab.Button.Visible then
+            GlobalIndicator.Visible = false
+            return
+        end
+
+        local buttonTop = selectedTab.Button.AbsolutePosition.Y
+        local listTop = TabContainer.AbsolutePosition.Y
+        local listBottom = listTop + TabContainer.AbsoluteSize.Y
+        local buttonBottom = buttonTop + selectedTab.Button.AbsoluteSize.Y
+        GlobalIndicator.Visible = buttonBottom > listTop and buttonTop < listBottom
+        local uiScale = math.max(0.01, MainScale.Scale)
+        GlobalIndicator.Position = UDim2.new(
+            0,
+            12,
+            0,
+            (buttonTop - Sidebar.AbsolutePosition.Y) / uiScale + 10
+        )
+    end
+
+    function WindowObj:ApplySearch(rawQuery)
+        self:HideTooltip()
+        local query = tostring(rawQuery or ""):lower():match("^%s*(.-)%s*$") or ""
+        self.SearchQuery = query
+
+        for _, tab in ipairs(self.Tabs) do
+            local tabNameMatch = query == "" or tostring(tab.Name):lower():find(query, 1, true) ~= nil
+            local tabControlMatch = false
+
+            for _, section in ipairs(tab.Sections or {}) do
+                local sectionMatch = query ~= ""
+                    and tostring(section.SearchText or ""):lower():find(query, 1, true) ~= nil
+                local sectionHasResult = false
+
+                for _, item in ipairs(section.SearchItems or {}) do
+                    local itemMatch = query == ""
+                        or sectionMatch
+                        or item.SearchText:find(query, 1, true) ~= nil
+                    item.Frame.Visible = itemMatch
+                    sectionHasResult = sectionHasResult or itemMatch
+                end
+
+                if section.SetSearchState then
+                    section:SetSearchState(query ~= "", sectionHasResult or sectionMatch)
+                end
+                tabControlMatch = tabControlMatch or sectionHasResult or sectionMatch
+            end
+
+            tab.Button.Visible = query == "" or tabNameMatch or tabControlMatch
+        end
+
+        UpdateTabCanvas()
+        task.defer(UpdateSelectedIndicator)
+    end
+
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        WindowObj:ApplySearch(SearchBox.Text)
+    end)
+    TabContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdateSelectedIndicator)
 
     local Icons = {
         ["accessibility"] = "rbxassetid://10709751939",
@@ -2518,8 +3649,16 @@ function EmperUI:CreateWindow(options)
         Divider.Size = UDim2.new(0, 2, 0, 0)
         
         local tabIndex = #WindowObj.Tabs + 1
-        local indicatorY = 124 + (tabIndex - 1) * 40 + 10
-        local tabData = {Button = TabBtn, Page = Page, IndicatorY = indicatorY, Icon = TabIcon, Selected = false}
+        local indicatorY = 164 + (tabIndex - 1) * 40 + 10
+        local tabData = {
+            Button = TabBtn,
+            Page = Page,
+            IndicatorY = indicatorY,
+            Icon = TabIcon,
+            Selected = false,
+            Name = tabName,
+            Sections = {},
+        }
 
         local function UpdateCanvas()
             local leftSize = LeftLayout.AbsoluteContentSize.Y
@@ -2547,6 +3686,8 @@ function EmperUI:CreateWindow(options)
         Page:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(UpdateCanvas)
 
         TabBtn.MouseButton1Click:Connect(function()
+            WindowObj.ActiveTab = tabName
+            WindowObj:HideTooltip()
             for _, tb in pairs(WindowObj.Tabs) do
                 tb.Selected = false
                 tb.Page.Visible = false
@@ -2563,13 +3704,15 @@ function EmperUI:CreateWindow(options)
             TweenService:Create(TabBtn, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 0, TextColor3 = Theme.Accent}):Play()
             
             GlobalIndicator.BackgroundTransparency = 0
+            local liveIndicatorY = (TabBtn.AbsolutePosition.Y - Sidebar.AbsolutePosition.Y) / math.max(0.01, MainScale.Scale) + 10
             TweenService:Create(GlobalIndicator, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(0, 12, 0, tabData.IndicatorY)
+                Position = UDim2.new(0, 12, 0, liveIndicatorY)
             }):Play()
             
             if TabIcon then
                 TweenService:Create(TabIcon, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = Theme.Accent}):Play()
             end
+            task.defer(UpdateSelectedIndicator)
         end)
 
         TabBtn.MouseEnter:Connect(function()
@@ -2590,9 +3733,186 @@ function EmperUI:CreateWindow(options)
         TabObj.Page = Page
         
         -- [ Section System (2-Column) ]
-        function TabObj:CreateSection(side)
-            local ParentCol = (side:lower() == "left") and LeftCol or RightCol
-            local Section = {}
+        function TabObj:CreateSection(side, sectionTitle)
+            local sectionOptions = {}
+            if type(side) == "table" then
+                sectionOptions = side
+                side = sectionOptions.Side or "Left"
+                sectionTitle = sectionOptions.Title or sectionOptions.Name
+            else
+                sectionOptions.Side = side
+                sectionOptions.Title = sectionTitle
+            end
+
+            side = tostring(side or "Left")
+            local Column = (side:lower() == "left") and LeftCol or RightCol
+            local hasHeader = sectionTitle ~= nil and tostring(sectionTitle) ~= ""
+            local headerHeight = hasHeader and 36 or 0
+            local collapsed = sectionOptions.Collapsed == true
+
+            local SectionContainer = Instance.new("Frame")
+            SectionContainer.Name = hasHeader and (tostring(sectionTitle) .. "Section") or "Section"
+            SectionContainer.Parent = Column
+            SectionContainer.BackgroundTransparency = 1
+            SectionContainer.BorderSizePixel = 0
+            SectionContainer.Size = UDim2.new(1, 0, 0, headerHeight)
+
+            local Content = Instance.new("Frame")
+            Content.Name = "Content"
+            Content.Parent = SectionContainer
+            Content.BackgroundTransparency = 1
+            Content.BorderSizePixel = 0
+            Content.Position = UDim2.new(0, 0, 0, headerHeight)
+            Content.Size = UDim2.new(1, 0, 0, 0)
+            Content.Visible = not collapsed
+
+            local ContentLayout = Instance.new("UIListLayout")
+            ContentLayout.Parent = Content
+            ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            ContentLayout.Padding = UDim.new(0, WindowObj:GetControlSpacing())
+
+            local Section = {
+                Container = SectionContainer,
+                Content = Content,
+                SearchItems = {},
+                SearchText = tostring(sectionTitle or ""):lower(),
+                SearchExpanded = false,
+            }
+            table.insert(tabData.Sections, Section)
+
+            local HeaderButton
+            local ArrowLabel
+
+            local function UpdateSectionSize()
+                local effectiveCollapsed = collapsed and not Section.SearchExpanded
+                local contentHeight = effectiveCollapsed and 0 or ContentLayout.AbsoluteContentSize.Y
+                Content.Visible = not effectiveCollapsed
+                Content.Size = UDim2.new(1, 0, 0, contentHeight)
+                SectionContainer.Size = UDim2.new(1, 0, 0, headerHeight + contentHeight)
+            end
+
+            if hasHeader then
+                HeaderButton = Instance.new("TextButton")
+                HeaderButton.Name = "SectionHeader"
+                HeaderButton.Parent = SectionContainer
+                WindowObj:ApplyTheme(HeaderButton, "BackgroundColor3", "ElementBg")
+                HeaderButton.Size = UDim2.new(1, 0, 0, 30)
+                HeaderButton.Text = ""
+                HeaderButton.AutoButtonColor = false
+                HeaderButton.BorderSizePixel = 0
+
+                local HeaderCorner = Instance.new("UICorner")
+                HeaderCorner.CornerRadius = UDim.new(0, 6)
+                HeaderCorner.Parent = HeaderButton
+
+                local HeaderStroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(HeaderStroke, "Color", "Border")
+                HeaderStroke.Thickness = 1
+                HeaderStroke.Parent = HeaderButton
+
+                local HeaderTitle = Instance.new("TextLabel")
+                HeaderTitle.Parent = HeaderButton
+                HeaderTitle.BackgroundTransparency = 1
+                HeaderTitle.Position = UDim2.new(0, 12, 0, 0)
+                HeaderTitle.Size = UDim2.new(1, -42, 1, 0)
+                HeaderTitle.Font = Enum.Font.GothamBold
+                HeaderTitle.Text = tostring(sectionTitle)
+                HeaderTitle.TextSize = 12
+                HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
+                WindowObj:ApplyTheme(HeaderTitle, "TextColor3", "Text")
+
+                ArrowLabel = Instance.new("TextLabel")
+                ArrowLabel.Parent = HeaderButton
+                ArrowLabel.BackgroundTransparency = 1
+                ArrowLabel.Position = UDim2.new(1, -30, 0, 0)
+                ArrowLabel.Size = UDim2.new(0, 22, 1, 0)
+                ArrowLabel.Font = Enum.Font.GothamBold
+                ArrowLabel.Text = collapsed and "+" or "−"
+                ArrowLabel.TextSize = 15
+                WindowObj:ApplyTheme(ArrowLabel, "TextColor3", "TextMuted")
+
+                HeaderButton.MouseEnter:Connect(function()
+                    TweenService:Create(HeaderButton, TweenInfo.new(0.18), {BackgroundColor3 = Theme.ElementHover}):Play()
+                end)
+                HeaderButton.MouseLeave:Connect(function()
+                    TweenService:Create(HeaderButton, TweenInfo.new(0.18), {BackgroundColor3 = Theme.ElementBg}):Play()
+                end)
+                HeaderButton.MouseButton1Click:Connect(function()
+                    Section:SetCollapsed(not collapsed)
+                end)
+                if sectionOptions.Tooltip or sectionOptions.Help then
+                    WindowObj:AttachTooltip(HeaderButton, sectionOptions.Tooltip or sectionOptions.Help)
+                end
+            end
+
+            function Section:SetCollapsed(state)
+                if not hasHeader then return false end
+                collapsed = state == true
+                if ArrowLabel then
+                    ArrowLabel.Text = collapsed and "+" or "−"
+                end
+                UpdateSectionSize()
+                return collapsed
+            end
+
+            function Section:ToggleCollapsed()
+                return self:SetCollapsed(not collapsed)
+            end
+
+            function Section:IsCollapsed()
+                return collapsed
+            end
+
+            function Section:SetVisible(visible)
+                SectionContainer.Visible = visible == true
+                return SectionContainer.Visible
+            end
+
+            function Section:SetSearchState(active, hasResult)
+                self.SearchExpanded = active and hasResult
+                SectionContainer.Visible = not active or hasResult
+                UpdateSectionSize()
+            end
+
+            function Section:_RegisterControl(frame, componentOptions, fallbackTitle, componentType, description)
+                local title = fallbackTitle or componentType or "Control"
+                local tooltip
+                local desc = description
+
+                if type(componentOptions) == "table" then
+                    title = componentOptions.Title or componentOptions.Name or title
+                    desc = componentOptions.Desc or componentOptions.Description or desc
+                    tooltip = componentOptions.Tooltip or componentOptions.Help
+                end
+
+                local searchText = table.concat({
+                    tostring(title or ""),
+                    tostring(desc or ""),
+                    tostring(componentType or ""),
+                }, " "):lower()
+
+                local item = {
+                    Frame = frame,
+                    SearchText = searchText,
+                }
+                table.insert(self.SearchItems, item)
+
+                if tooltip then
+                    WindowObj:AttachTooltip(frame, tooltip)
+                end
+
+                if WindowObj.SearchQuery and WindowObj.SearchQuery ~= "" then
+                    task.defer(function()
+                        WindowObj:ApplySearch(WindowObj.SearchQuery)
+                    end)
+                end
+                return item
+            end
+
+            ContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateSectionSize)
+            UpdateSectionSize()
+
+            local ParentCol = Content
 
             -- [ Create Button ]
             function Section:CreateButton(arg1, arg2)
@@ -2605,17 +3925,20 @@ function EmperUI:CreateWindow(options)
                     btnText = arg1
                     callback = arg2
                 end
+                local disabled = type(arg1) == "table" and arg1.Disabled == true
                 
-                local baseHeight = descText and 56 or 42
+                local baseHeight = (descText and 56 or 42) * WindowObj:GetControlScale()
                 
                 local BtnFrame = Instance.new("Frame")
                 BtnFrame.Parent = ParentCol
                 WindowObj:ApplyTheme(BtnFrame, "BackgroundColor3", "ElementBg")
                 BtnFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 BtnFrame.BorderSizePixel = 0
+                BtnFrame.ClipsDescendants = true
+                Section:_RegisterControl(BtnFrame, arg1, btnText, "Button", descText)
 
                 local BtnCorner = Instance.new("UICorner")
-                BtnCorner.CornerRadius = UDim.new(0, 6)
+                BtnCorner.CornerRadius = UDim.new(0, WindowObj:GetControlRadius())
                 BtnCorner.Parent = BtnFrame
 
                 local BtnStroke = Instance.new("UIStroke")
@@ -2639,8 +3962,15 @@ function EmperUI:CreateWindow(options)
                 Hitbox.BackgroundTransparency = 1
                 Hitbox.Size = UDim2.new(1, 0, 1, 0)
                 Hitbox.Position = UDim2.new(0, 0, 0, 0)
+                if WindowObj:GetTouchMode() and WindowObj:GetTouchPadding() > 0 then
+                    local padding = WindowObj:GetTouchPadding()
+                    Hitbox.Size = UDim2.new(1, padding * 2, 1, padding * 2)
+                    Hitbox.Position = UDim2.new(0, -padding, 0, -padding)
+                end
                 Hitbox.Text = ""
                 Hitbox.ZIndex = 5
+                Hitbox.AutoButtonColor = false
+                Hitbox.Active = not disabled
                 
                 if descText then
                     local DescLabel = Instance.new("TextLabel")
@@ -2676,14 +4006,56 @@ function EmperUI:CreateWindow(options)
                     TweenService:Create(ClickIcon, TweenInfo.new(0.25, Enum.EasingStyle.Sine), {ImageColor3 = Theme.TextMuted, Position = UDim2.new(1, -30, 0.5, -9)}):Play()
                 end)
 
+                -- Press feedback: keep the button in place, but visibly depress it.
+                Hitbox.MouseButton1Down:Connect(function()
+                    TweenService:Create(BtnFrame, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+                        BackgroundColor3 = Theme.Accent,
+                    }):Play()
+                    TweenService:Create(BtnStroke, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+                        Thickness = 2,
+                    }):Play()
+                    TweenService:Create(TitleLabel, TweenInfo.new(0.08, Enum.EasingStyle.Quad), {
+                        TextTransparency = 0.18,
+                    }):Play()
+                end)
+
+                Hitbox.MouseButton1Up:Connect(function()
+                    TweenService:Create(BtnFrame, TweenInfo.new(0.16, Enum.EasingStyle.Quad), {
+                        BackgroundColor3 = Theme.ElementHover,
+                    }):Play()
+                    TweenService:Create(BtnStroke, TweenInfo.new(0.16, Enum.EasingStyle.Quad), {
+                        Thickness = 1,
+                    }):Play()
+                    TweenService:Create(TitleLabel, TweenInfo.new(0.16, Enum.EasingStyle.Quad), {
+                        TextTransparency = 0,
+                    }):Play()
+                end)
+
+                if WindowObj:GetTouchMode() then
+                    Hitbox.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch and not disabled then
+                            TweenService:Create(BtnFrame, TweenInfo.new(0.08), {BackgroundColor3 = Theme.Accent}):Play()
+                            TweenService:Create(BtnStroke, TweenInfo.new(0.08), {Thickness = 2}):Play()
+                        end
+                    end)
+                    Hitbox.InputEnded:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch then
+                            TweenService:Create(BtnFrame, TweenInfo.new(0.16), {BackgroundColor3 = Theme.ElementHover}):Play()
+                            TweenService:Create(BtnStroke, TweenInfo.new(0.16), {Thickness = 1}):Play()
+                        end
+                    end)
+                end
+
                 Hitbox.MouseButton1Click:Connect(function()
-                    local ripple = Instance.new("Frame")
+                    if disabled then return end
+                local ripple = Instance.new("Frame")
                     ripple.Parent = BtnFrame
                     WindowObj:ApplyTheme(ripple, "BackgroundColor3", "Accent")
                     ripple.BackgroundTransparency = 0.8
                     ripple.BorderSizePixel = 0
                     ripple.Position = UDim2.new(0.5, 0, 0.5, 0)
                     ripple.Size = UDim2.new(0, 0, 0, 0)
+                    ripple.ZIndex = 0
                     
                     local rc = Instance.new("UICorner")
                     rc.CornerRadius = UDim.new(1, 0)
@@ -2699,6 +4071,23 @@ function EmperUI:CreateWindow(options)
                     
                     if callback then callback() end
                 end)
+
+                local ButtonObject = {
+                    Instance = BtnFrame,
+                    Hitbox = Hitbox,
+                }
+                function ButtonObject:SetDisabled(value)
+                    disabled = value == true
+                    Hitbox.Active = not disabled
+                    BtnFrame.BackgroundTransparency = disabled and 0.35 or 0
+                    TitleLabel.TextTransparency = disabled and 0.45 or 0
+                    return disabled
+                end
+                function ButtonObject:IsDisabled()
+                    return disabled
+                end
+                if disabled then ButtonObject:SetDisabled(true) end
+                return ButtonObject
             end
 
             -- [ Create Toggle ]
@@ -2723,6 +4112,7 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(ToggleFrame, "BackgroundColor3", "ElementBg")
                 ToggleFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 ToggleFrame.BorderSizePixel = 0
+                Section:_RegisterControl(ToggleFrame, arg1, toggleText, "Toggle", descText)
 
                 local TgCorner = Instance.new("UICorner")
                 TgCorner.CornerRadius = UDim.new(0, 6)
@@ -2827,8 +4217,9 @@ function EmperUI:CreateWindow(options)
                     return Toggled
                 end
 
-                WindowObj.ConfigElements[toggleText] = {
+                WindowObj.ConfigElements[GetConfigKey(arg1, toggleText)] = {
                     Type = "Toggle",
+                    DefaultValue = defaultState,
                     GetValue = function() return Toggled end,
                     SetValue = function(val) ToggleObj:SetState(val) end
                 }
@@ -2866,6 +4257,7 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(SliderFrame, "BackgroundColor3", "ElementBg")
                 SliderFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 SliderFrame.BorderSizePixel = 0
+                Section:_RegisterControl(SliderFrame, arg1, sliderText, "Slider", descText)
 
                 local SlCorner = Instance.new("UICorner")
                 SlCorner.CornerRadius = UDim.new(0, 6)
@@ -2975,19 +4367,19 @@ function EmperUI:CreateWindow(options)
 
                 local Dragging = false
                 Hitbox.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or (WindowObj:GetTouchMode() and input.UserInputType == Enum.UserInputType.Touch) then
                         Dragging = true
                         UpdateSliderInput(input)
                     end
                 end)
 
                 Hitbox.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or (WindowObj:GetTouchMode() and input.UserInputType == Enum.UserInputType.Touch) then
                         Dragging = false
                     end
                 end)
 
-                UserInputService.InputChanged:Connect(function(input)
+                WindowObj:Connect(UserInputService.InputChanged, function(input)
                     if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                         UpdateSliderInput(input)
                     end
@@ -3014,7 +4406,11 @@ function EmperUI:CreateWindow(options)
                     if callback then callback(val) end
                 end
 
-                WindowObj.ConfigElements[sliderText] = {
+                function SliderObj:GetValue()
+                    return Value
+                end
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, sliderText)] = {
                     Type = "Slider",
                     GetValue = function() return Value end,
                     SetValue = function(val) SliderObj:SetValue(val) end
@@ -3055,6 +4451,7 @@ function EmperUI:CreateWindow(options)
                 DropdownFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
+                Section:_RegisterControl(DropdownFrame, arg1, dropdownText, "Dropdown", descText)
 
                 local DpCorner = Instance.new("UICorner")
                 DpCorner.CornerRadius = UDim.new(0, 6)
@@ -3237,19 +4634,21 @@ function EmperUI:CreateWindow(options)
                     return CurrentOption
                 end
 
-                WindowObj.ConfigElements[dropdownText] = {
+                function DropdownObj:SetValue(val)
+                    CurrentOption = val
+                    SelLabel.Text = tostring(val)
+                    for _, btnInfo in pairs(DropdownObj.Options) do
+                        local isSelected = (btnInfo.Name == val)
+                        btnInfo.Button.TextColor3 = isSelected and Theme.Accent or Theme.TextMuted
+                        btnInfo.Stroke.Enabled = isSelected
+                    end
+                    if callback then callback(val) end
+                end
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, dropdownText)] = {
                     Type = "Dropdown",
                     GetValue = function() return CurrentOption end,
-                    SetValue = function(val) 
-                        CurrentOption = val
-                        SelLabel.Text = tostring(val)
-                        for _, btnInfo in pairs(DropdownObj.Options) do
-                            local isSelected = (btnInfo.Name == val)
-                            btnInfo.Button.TextColor3 = isSelected and Theme.Accent or Theme.TextMuted
-                            btnInfo.Stroke.Enabled = isSelected
-                        end
-                        if callback then callback(val) end
-                    end
+                    SetValue = function(val) DropdownObj:SetValue(val) end
                 }
 
                 return DropdownObj
@@ -3280,6 +4679,7 @@ function EmperUI:CreateWindow(options)
                 DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
+                Section:_RegisterControl(DropdownFrame, arg1, dropdownText, "MultiDropdown")
 
                 local DpCorner = Instance.new("UICorner")
                 DpCorner.CornerRadius = UDim.new(0, 6)
@@ -3465,7 +4865,11 @@ function EmperUI:CreateWindow(options)
                     UpdateDropdownSize()
                 end
 
-                WindowObj.ConfigElements[dropdownText] = {
+                function MultiDropdownObj:GetValue()
+                    return table.clone(CurrentOptions)
+                end
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, dropdownText)] = {
                     Type = "MultiDropdown",
                     GetValue = function() return CurrentOptions end,
                     SetValue = function(val) 
@@ -3512,6 +4916,7 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(TbFrame, "BackgroundColor3", "ElementBg")
                 TbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 TbFrame.BorderSizePixel = 0
+                Section:_RegisterControl(TbFrame, arg1, tbText, "TextBox", descText)
  
                 local TbCorner = Instance.new("UICorner")
                 TbCorner.CornerRadius = UDim.new(0, 6)
@@ -3595,7 +5000,7 @@ function EmperUI:CreateWindow(options)
                     TextBox.Text = tostring(val)
                 end
  
-                WindowObj.ConfigElements[tbText] = {
+                WindowObj.ConfigElements[GetConfigKey(arg1, tbText)] = {
                     Type = "TextBox",
                     GetValue = function() return TextBox.Text end,
                     SetValue = function(val) 
@@ -3632,6 +5037,7 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(KbFrame, "BackgroundColor3", "ElementBg")
                 KbFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 KbFrame.BorderSizePixel = 0
+                Section:_RegisterControl(KbFrame, arg1, kbText, "Keybind", descText)
 
                 local KbCorner = Instance.new("UICorner")
                 KbCorner.CornerRadius = UDim.new(0, 6)
@@ -3718,7 +5124,7 @@ function EmperUI:CreateWindow(options)
                     end
                 end)
 
-                UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                WindowObj:Connect(UserInputService.InputBegan, function(input, gameProcessed)
                     if not gameProcessed and not IsBinding then
                         if input.KeyCode == CurrentKey then
                             if callback then callback(CurrentKey) end
@@ -3741,18 +5147,36 @@ function EmperUI:CreateWindow(options)
                     end
                 end)
 
-                WindowObj.ConfigElements[kbText] = {
+                local KeybindObj = {}
+
+                function KeybindObj:SetKey(key)
+                    local keyEnum = key
+                    if type(key) == "string" then
+                        keyEnum = Enum.KeyCode[key]
+                    end
+                    if typeof(keyEnum) ~= "EnumItem" then return false end
+
+                    CurrentKey = keyEnum
+                    BindBtn.Text = CurrentKey.Name
+                    if callback then callback(CurrentKey) end
+                    return true
+                end
+
+                function KeybindObj:GetKey()
+                    return CurrentKey
+                end
+
+                function KeybindObj:GetValue()
+                    return CurrentKey.Name
+                end
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, kbText)] = {
                     Type = "Keybind",
                     GetValue = function() return CurrentKey.Name end,
-                    SetValue = function(val) 
-                        local keyEnum = Enum.KeyCode[val]
-                        if keyEnum then
-                            CurrentKey = keyEnum
-                            BindBtn.Text = CurrentKey.Name
-                            if callback then callback(CurrentKey) end
-                        end
-                    end
+                    SetValue = function(val) KeybindObj:SetKey(val) end
                 }
+
+                return KeybindObj
             end
 
             -- [ Create Label ]
@@ -3768,6 +5192,7 @@ function EmperUI:CreateWindow(options)
                 LblFrame.Parent = ParentCol
                 LblFrame.BackgroundTransparency = 1
                 LblFrame.Size = UDim2.new(1, 0, 0, 24)
+                Section:_RegisterControl(LblFrame, arg1, labelText, "Label")
                 
                 local Lbl = Instance.new("TextLabel")
                 Lbl.Parent = LblFrame
@@ -3825,6 +5250,7 @@ function EmperUI:CreateWindow(options)
                 CpFrame.Size = UDim2.new(1, 0, 0, 42)
                 CpFrame.BorderSizePixel = 0
                 CpFrame.ClipsDescendants = true
+                Section:_RegisterControl(CpFrame, arg1, cpText, "Colorpicker")
 
                 local CpCorner = Instance.new("UICorner")
                 CpCorner.CornerRadius = UDim.new(0, 6)
@@ -3942,7 +5368,7 @@ function EmperUI:CreateWindow(options)
 
                     local dragging = false
                     Hitbox.MouseButton1Down:Connect(function() dragging = true end)
-                    UserInputService.InputEnded:Connect(function(input)
+                    WindowObj:Connect(UserInputService.InputEnded, function(input)
                         if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
                     end)
                     
@@ -3957,7 +5383,7 @@ function EmperUI:CreateWindow(options)
                         updateSlider({Position = Vector2.new(input.X, input.Y - 36)})
                     end)
 
-                    UserInputService.InputChanged:Connect(function(input)
+                    WindowObj:Connect(UserInputService.InputChanged, function(input)
                         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                             updateSlider(input)
                         end
@@ -4006,8 +5432,12 @@ function EmperUI:CreateWindow(options)
                     setH(h) setS(s) setV(v)
                     UpdateColor()
                 end
+
+                function CpObj:GetColor()
+                    return CurrentColor
+                end
                 
-                WindowObj.ConfigElements[cpText] = {
+                WindowObj.ConfigElements[GetConfigKey(arg1, cpText)] = {
                     Type = "Colorpicker",
                     GetValue = function() return {R = CurrentColor.R, G = CurrentColor.G, B = CurrentColor.B} end,
                     SetValue = function(val) 
@@ -4018,6 +5448,333 @@ function EmperUI:CreateWindow(options)
                 }
 
                 return CpObj
+            end
+
+            -- [ Create Paragraph ]
+            function Section:CreateParagraph(arg1, arg2)
+                local titleText, bodyText
+                if type(arg1) == "table" then
+                    titleText = arg1.Title or arg1.Name or "Paragraph"
+                    bodyText = arg1.Content or arg1.Text or arg1.Description or arg1.Desc or ""
+                else
+                    titleText = arg1 or "Paragraph"
+                    bodyText = arg2 or ""
+                end
+
+                local estimatedLines = math.max(1, math.ceil(#tostring(bodyText) / 42))
+                local frameHeight = math.clamp(48 + (estimatedLines * 14), 62, 118)
+
+                local Frame = Instance.new("Frame")
+                Frame.Parent = ParentCol
+                WindowObj:ApplyTheme(Frame, "BackgroundColor3", "ElementBg")
+                Frame.Size = UDim2.new(1, 0, 0, frameHeight)
+                Frame.BorderSizePixel = 0
+                Section:_RegisterControl(Frame, arg1, titleText, "Paragraph", bodyText)
+
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 6)
+                Corner.Parent = Frame
+
+                local Stroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(Stroke, "Color", "Border")
+                Stroke.Thickness = 1
+                Stroke.Parent = Frame
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = Frame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Position = UDim2.new(0, 14, 0, 8)
+                TitleLabel.Size = UDim2.new(1, -28, 0, 18)
+                TitleLabel.Font = Enum.Font.GothamBold
+                TitleLabel.Text = tostring(titleText)
+                TitleLabel.TextSize = 13
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
+
+                local BodyLabel = Instance.new("TextLabel")
+                BodyLabel.Parent = Frame
+                BodyLabel.BackgroundTransparency = 1
+                BodyLabel.Position = UDim2.new(0, 14, 0, 29)
+                BodyLabel.Size = UDim2.new(1, -28, 1, -37)
+                BodyLabel.Font = Enum.Font.Gotham
+                BodyLabel.Text = tostring(bodyText)
+                BodyLabel.TextSize = 11
+                BodyLabel.TextWrapped = true
+                BodyLabel.TextXAlignment = Enum.TextXAlignment.Left
+                BodyLabel.TextYAlignment = Enum.TextYAlignment.Top
+                WindowObj:ApplyTheme(BodyLabel, "TextColor3", "TextMuted")
+
+                local ParagraphObj = {}
+                function ParagraphObj:SetTitle(value)
+                    TitleLabel.Text = tostring(value)
+                end
+                function ParagraphObj:SetContent(value)
+                    BodyLabel.Text = tostring(value)
+                end
+                return ParagraphObj
+            end
+
+            -- [ Create Progress Bar ]
+            function Section:CreateProgress(arg1)
+                arg1 = type(arg1) == "table" and arg1 or {Title = tostring(arg1 or "Progress")}
+                local titleText = arg1.Title or arg1.Name or "Progress"
+                local minimum = tonumber(arg1.Min) or 0
+                local maximum = tonumber(arg1.Max) or 100
+                if maximum <= minimum then maximum = minimum + 1 end
+                local value = math.clamp(tonumber(arg1.Value or arg1.Default) or minimum, minimum, maximum)
+
+                local Frame = Instance.new("Frame")
+                Frame.Parent = ParentCol
+                WindowObj:ApplyTheme(Frame, "BackgroundColor3", "ElementBg")
+                Frame.Size = UDim2.new(1, 0, 0, 54)
+                Frame.BorderSizePixel = 0
+                Section:_RegisterControl(Frame, arg1, titleText, "Progress")
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 6)
+                Corner.Parent = Frame
+                local Stroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(Stroke, "Color", "Border")
+                Stroke.Thickness = 1
+                Stroke.Parent = Frame
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = Frame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Position = UDim2.new(0, 14, 0, 5)
+                TitleLabel.Size = UDim2.new(0.65, -14, 0, 22)
+                TitleLabel.Font = Enum.Font.GothamMedium
+                TitleLabel.Text = tostring(titleText)
+                TitleLabel.TextSize = 13
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
+
+                local ValueLabel = Instance.new("TextLabel")
+                ValueLabel.Parent = Frame
+                ValueLabel.BackgroundTransparency = 1
+                ValueLabel.Position = UDim2.new(0.65, 0, 0, 5)
+                ValueLabel.Size = UDim2.new(0.35, -14, 0, 22)
+                ValueLabel.Font = Enum.Font.Gotham
+                ValueLabel.TextSize = 11
+                ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                WindowObj:ApplyTheme(ValueLabel, "TextColor3", "TextMuted")
+
+                local Track = Instance.new("Frame")
+                Track.Parent = Frame
+                Track.BackgroundColor3 = Color3.fromRGB(10, 11, 16)
+                Track.Position = UDim2.new(0, 14, 0, 34)
+                Track.Size = UDim2.new(1, -28, 0, 8)
+                Track.BorderSizePixel = 0
+                local TrackCorner = Instance.new("UICorner")
+                TrackCorner.CornerRadius = UDim.new(1, 0)
+                TrackCorner.Parent = Track
+
+                local Fill = Instance.new("Frame")
+                Fill.Parent = Track
+                WindowObj:ApplyTheme(Fill, "BackgroundColor3", "Accent")
+                Fill.BorderSizePixel = 0
+                local FillCorner = Instance.new("UICorner")
+                FillCorner.CornerRadius = UDim.new(1, 0)
+                FillCorner.Parent = Fill
+
+                local ProgressObj = {}
+                function ProgressObj:SetValue(newValue)
+                    value = math.clamp(tonumber(newValue) or minimum, minimum, maximum)
+                    local ratio = (value - minimum) / (maximum - minimum)
+                    ValueLabel.Text = string.format("%d%%", math.floor(ratio * 100 + 0.5))
+                    TweenService:Create(Fill, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
+                        Size = UDim2.new(ratio, 0, 1, 0)
+                    }):Play()
+                    if arg1.Callback then arg1.Callback(value) end
+                end
+                function ProgressObj:GetValue()
+                    return value
+                end
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, titleText)] = {
+                    Type = "Progress",
+                    GetValue = function() return value end,
+                    SetValue = function(newValue) ProgressObj:SetValue(newValue) end,
+                }
+                ProgressObj:SetValue(value)
+                return ProgressObj
+            end
+
+            -- [ Create Status Badge ]
+            function Section:CreateBadge(arg1, arg2)
+                local options = type(arg1) == "table" and arg1 or {Title = arg1, Text = arg2}
+                local titleText = options.Title or options.Name or "Status"
+                local badgeText = options.Text or options.Value or "Ready"
+                local badgeColor = options.Color or Theme.Accent
+
+                local Frame = Instance.new("Frame")
+                Frame.Parent = ParentCol
+                WindowObj:ApplyTheme(Frame, "BackgroundColor3", "ElementBg")
+                Frame.Size = UDim2.new(1, 0, 0, 42)
+                Frame.BorderSizePixel = 0
+                Section:_RegisterControl(Frame, options, titleText, "Badge", badgeText)
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 6)
+                Corner.Parent = Frame
+                local Stroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(Stroke, "Color", "Border")
+                Stroke.Thickness = 1
+                Stroke.Parent = Frame
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = Frame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Position = UDim2.new(0, 14, 0, 0)
+                TitleLabel.Size = UDim2.new(0.58, -14, 1, 0)
+                TitleLabel.Font = Enum.Font.GothamMedium
+                TitleLabel.Text = tostring(titleText)
+                TitleLabel.TextSize = 13
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
+
+                local Badge = Instance.new("TextLabel")
+                Badge.Parent = Frame
+                Badge.AnchorPoint = Vector2.new(1, 0.5)
+                Badge.Position = UDim2.new(1, -12, 0.5, 0)
+                Badge.Size = UDim2.new(0.38, 0, 0, 24)
+                Badge.BackgroundColor3 = badgeColor
+                Badge.BackgroundTransparency = 0.78
+                Badge.Font = Enum.Font.GothamBold
+                Badge.Text = tostring(badgeText)
+                Badge.TextColor3 = badgeColor
+                Badge.TextSize = 10
+                local BadgeCorner = Instance.new("UICorner")
+                BadgeCorner.CornerRadius = UDim.new(1, 0)
+                BadgeCorner.Parent = Badge
+                local BadgeStroke = Instance.new("UIStroke")
+                BadgeStroke.Color = badgeColor
+                BadgeStroke.Transparency = 0.35
+                BadgeStroke.Thickness = 1
+                BadgeStroke.Parent = Badge
+
+                local BadgeObj = {}
+                function BadgeObj:SetText(value)
+                    Badge.Text = tostring(value)
+                end
+                function BadgeObj:SetColor(color)
+                    badgeColor = color
+                    Badge.BackgroundColor3 = color
+                    Badge.TextColor3 = color
+                    BadgeStroke.Color = color
+                end
+                return BadgeObj
+            end
+
+            -- [ Create Number Input ]
+            function Section:CreateNumberInput(arg1)
+                arg1 = type(arg1) == "table" and arg1 or {Title = tostring(arg1 or "Number")}
+                local titleText = arg1.Title or arg1.Name or "Number"
+                local minimum = tonumber(arg1.Min) or 0
+                local maximum = tonumber(arg1.Max) or 100
+                local step = math.abs(tonumber(arg1.Step) or 1)
+                if step == 0 then step = 1 end
+                local value = math.clamp(tonumber(arg1.Value or arg1.Default) or minimum, minimum, maximum)
+
+                local Frame = Instance.new("Frame")
+                Frame.Parent = ParentCol
+                WindowObj:ApplyTheme(Frame, "BackgroundColor3", "ElementBg")
+                Frame.Size = UDim2.new(1, 0, 0, 44)
+                Frame.BorderSizePixel = 0
+                Section:_RegisterControl(Frame, arg1, titleText, "NumberInput")
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 6)
+                Corner.Parent = Frame
+                local Stroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(Stroke, "Color", "Border")
+                Stroke.Thickness = 1
+                Stroke.Parent = Frame
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Parent = Frame
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Position = UDim2.new(0, 14, 0, 0)
+                TitleLabel.Size = UDim2.new(0.48, -14, 1, 0)
+                TitleLabel.Font = Enum.Font.GothamMedium
+                TitleLabel.Text = tostring(titleText)
+                TitleLabel.TextSize = 13
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
+
+                local Control = Instance.new("Frame")
+                Control.Parent = Frame
+                Control.Position = UDim2.new(0.5, 0, 0, 7)
+                Control.Size = UDim2.new(0.5, -12, 0, 30)
+                Control.BackgroundColor3 = Color3.fromRGB(13, 14, 20)
+                Control.BorderSizePixel = 0
+                local ControlCorner = Instance.new("UICorner")
+                ControlCorner.CornerRadius = UDim.new(0, 5)
+                ControlCorner.Parent = Control
+                local ControlStroke = Instance.new("UIStroke")
+                WindowObj:ApplyTheme(ControlStroke, "Color", "Border")
+                ControlStroke.Thickness = 1
+                ControlStroke.Parent = Control
+
+                local Minus = Instance.new("TextButton")
+                Minus.Parent = Control
+                Minus.Size = UDim2.new(0, 28, 1, 0)
+                Minus.BackgroundTransparency = 1
+                Minus.Font = Enum.Font.GothamBold
+                Minus.Text = "−"
+                Minus.TextSize = 15
+                Minus.AutoButtonColor = false
+                WindowObj:ApplyTheme(Minus, "TextColor3", "TextMuted")
+
+                local Plus = Instance.new("TextButton")
+                Plus.Parent = Control
+                Plus.AnchorPoint = Vector2.new(1, 0)
+                Plus.Position = UDim2.new(1, 0, 0, 0)
+                Plus.Size = UDim2.new(0, 28, 1, 0)
+                Plus.BackgroundTransparency = 1
+                Plus.Font = Enum.Font.GothamBold
+                Plus.Text = "+"
+                Plus.TextSize = 15
+                Plus.AutoButtonColor = false
+                WindowObj:ApplyTheme(Plus, "TextColor3", "TextMuted")
+
+                local Input = Instance.new("TextBox")
+                Input.Parent = Control
+                Input.Position = UDim2.new(0, 28, 0, 0)
+                Input.Size = UDim2.new(1, -56, 1, 0)
+                Input.BackgroundTransparency = 1
+                Input.ClearTextOnFocus = false
+                Input.Font = Enum.Font.GothamMedium
+                Input.TextSize = 11
+                Input.Text = tostring(value)
+                WindowObj:ApplyTheme(Input, "TextColor3", "Text")
+
+                local NumberObj = {}
+                function NumberObj:SetValue(newValue)
+                    value = math.clamp(tonumber(newValue) or value, minimum, maximum)
+                    value = math.floor((value / step) + 0.5) * step
+                    value = math.clamp(value, minimum, maximum)
+                    Input.Text = tostring(value)
+                    if arg1.Callback then arg1.Callback(value) end
+                    return value
+                end
+                function NumberObj:GetValue()
+                    return value
+                end
+
+                Minus.MouseButton1Click:Connect(function()
+                    NumberObj:SetValue(value - step)
+                end)
+                Plus.MouseButton1Click:Connect(function()
+                    NumberObj:SetValue(value + step)
+                end)
+                Input.FocusLost:Connect(function()
+                    NumberObj:SetValue(Input.Text)
+                end)
+
+                WindowObj.ConfigElements[GetConfigKey(arg1, titleText)] = {
+                    Type = "NumberInput",
+                    GetValue = function() return value end,
+                    SetValue = function(newValue) NumberObj:SetValue(newValue) end,
+                }
+                return NumberObj
             end
 
             -- [ Aliases for modern dictionary API ]
@@ -4031,11 +5788,17 @@ function EmperUI:CreateWindow(options)
             Section.Colorpicker = Section.CreateColorpicker
             Section.Label = Section.CreateLabel
             Section.Divider = Section.CreateDivider
+            Section.Paragraph = Section.CreateParagraph
+            Section.Progress = Section.CreateProgress
+            Section.Badge = Section.CreateBadge
+            Section.StatusBadge = Section.CreateBadge
+            Section.NumberInput = Section.CreateNumberInput
 
             return Section
         end
 
         table.insert(WindowObj.Tabs, tabData)
+        WindowObj:ApplySearch(WindowObj.SearchQuery or "")
 
         if #WindowObj.Tabs == 1 then
             Page.Visible = true
@@ -4053,6 +5816,7 @@ function EmperUI:CreateWindow(options)
     end
 
     -- [ Auto-generate Profile Tab ]
+    if options.ShowProfile ~= false then
     local ProfileTab = WindowObj:CreateTab("Profile", "user")
     local ProfilePage = ProfileTab.Page
     
@@ -4265,6 +6029,8 @@ function EmperUI:CreateWindow(options)
     end)
 
     -- [ Create Dialog ]
+    end
+
     function WindowObj:ShowDialog(title, message, options, callback)
         options = options or {"Yes", "No"}
         
@@ -4367,9 +6133,39 @@ function EmperUI:CreateWindow(options)
     end
 
     -- [ Save / Load Config ]
+    local function SanitizeConfigName(fileName)
+        local cleaned = tostring(fileName or "")
+        cleaned = cleaned:match("^%s*(.-)%s*$") or ""
+        cleaned = cleaned:gsub("[^%w_%-]", "")
+        return cleaned
+    end
+
+    function WindowObj:GetProfiles(folderName)
+        return self:GetConfigs(folderName)
+    end
+
+    function WindowObj:CreateProfile(folderName, profileName)
+        profileName = SanitizeConfigName(profileName)
+        if profileName == "" then return false end
+        return self:SaveConfig(folderName, profileName)
+    end
+
+    function WindowObj:ResetConfig()
+        local resetCount = 0
+        for _, element in pairs(self.ConfigElements) do
+            if element.DefaultValue ~= nil and element.SetValue then
+                pcall(element.SetValue, element.DefaultValue)
+                resetCount += 1
+            end
+        end
+        return resetCount
+    end
+
     function WindowObj:GetConfigs(folderName)
         if not isfolder or not listfiles then return {} end
-        if not isfolder(folderName) then makefolder(folderName) end
+        if not isfolder(folderName) and makefolder then
+            pcall(makefolder, folderName)
+        end
         
         local configs = {}
         pcall(function()
@@ -4387,28 +6183,41 @@ function EmperUI:CreateWindow(options)
 
     function WindowObj:SaveConfig(folderName, fileName)
         if not isfolder or not writefile then return end
-        if not isfolder(folderName) then makefolder(folderName) end
+        fileName = SanitizeConfigName(fileName)
+        if fileName == "" then
+            EmperUI:Notify({Title = "Invalid Config", Message = "Config name is empty or invalid", Type = "error", Duration = 3})
+            return false
+        end
+        if not isfolder(folderName) and makefolder then
+            local folderCreated = pcall(makefolder, folderName)
+            if not folderCreated then return false end
+        end
         
         local data = {}
         for key, element in pairs(WindowObj.ConfigElements) do
             data[key] = element.GetValue()
         end
         
-        local HttpService = game:GetService("HttpService")
         local success, encoded = pcall(HttpService.JSONEncode, HttpService, data)
         if success then
-            writefile(folderName .. "/" .. fileName .. ".json", encoded)
+            local writeSuccess = pcall(writefile, folderName .. "/" .. fileName .. ".json", encoded)
+            if not writeSuccess then return false end
             EmperUI:Notify({Title = "Config Saved", Message = "Saved configuration to " .. fileName .. ".json", Type = "success", Duration = 3})
+            return true
         end
+        return false
     end
 
     function WindowObj:LoadConfig(folderName, fileName)
         if not isfile or not readfile then return end
+        fileName = SanitizeConfigName(fileName)
+        if fileName == "" then return false end
         local path = folderName .. "/" .. fileName .. ".json"
         if not isfile(path) then return end
         
-        local HttpService = game:GetService("HttpService")
-        local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(path))
+        local success, decoded = pcall(function()
+            return HttpService:JSONDecode(readfile(path))
+        end)
         if success and type(decoded) == "table" then
             for key, val in pairs(decoded) do
                 if WindowObj.ConfigElements[key] then
@@ -4418,16 +6227,23 @@ function EmperUI:CreateWindow(options)
                 end
             end
             EmperUI:Notify({Title = "Config Loaded", Message = "Loaded configuration from " .. fileName .. ".json", Type = "success", Duration = 3})
+            return true
         end
+        return false
     end
 
     function WindowObj:DeleteConfig(folderName, fileName)
         if not isfile or not delfile then return end
+        fileName = SanitizeConfigName(fileName)
+        if fileName == "" then return false end
         local path = folderName .. "/" .. fileName .. ".json"
         if isfile(path) then
-            pcall(delfile, path)
+            local deleteSuccess = pcall(delfile, path)
+            if not deleteSuccess then return false end
             EmperUI:Notify({Title = "Config Deleted", Message = "Deleted configuration " .. fileName .. ".json", Type = "info", Duration = 3})
+            return true
         end
+        return false
     end
 
     function WindowObj:BuildSettingsSystem(ParentObj, folderName)
@@ -4474,6 +6290,21 @@ function EmperUI:CreateWindow(options)
         })
 
         ConfigSection:Button({
+            Title = "Create Profile",
+            Desc = "Create or overwrite a named local profile",
+            Callback = function()
+                local name = SanitizeConfigName(ConfigNameBox:GetValue())
+                if name == "" then
+                    EmperUI:Notify({Title = "Invalid Profile", Message = "Use letters, numbers, _ or -", Type = "error", Duration = 3})
+                    return
+                end
+                if WindowObj:CreateProfile(folderName, name) then
+                    ConfigDropdown:Refresh(WindowObj:GetProfiles(folderName), name)
+                end
+            end,
+        })
+
+        ConfigSection:Button({
             Title = "Load Config",
             Desc = "โหลดการตั้งค่าที่เลือก",
             Callback = function()
@@ -4513,6 +6344,15 @@ function EmperUI:CreateWindow(options)
                 ConfigDropdown:Refresh(WindowObj:GetConfigs(folderName))
                 EmperUI:Notify({Title = "Refreshed", Message = "รีเฟรชรายชื่อ Config เรียบร้อย", Type = "success", Duration = 2})
             end
+        })
+
+        ConfigSection:Button({
+            Title = "Reset Current Values",
+            Desc = "Restore controls that define a default value",
+            Callback = function()
+                local count = WindowObj:ResetConfig()
+                EmperUI:Notify({Title = "Config Reset", Message = "Reset " .. tostring(count) .. " control(s)", Type = "info", Duration = 3})
+            end,
         })
 
         local AutoLoadToggle = ConfigSection:Toggle({
@@ -4624,6 +6464,20 @@ function EmperUI:CreateWindow(options)
 
     -- [ Premium Feature: Live Watermark ]
     function WindowObj:SetWatermark(text)
+        WindowObj.WatermarkGeneration = WindowObj.WatermarkGeneration + 1
+        local generation = WindowObj.WatermarkGeneration
+
+        if WindowObj.WatermarkConnection then
+            pcall(function()
+                WindowObj.WatermarkConnection:Disconnect()
+            end)
+            WindowObj.WatermarkConnection = nil
+        end
+        if WindowObj.WatermarkDragCleanup then
+            WindowObj.WatermarkDragCleanup()
+            WindowObj.WatermarkDragCleanup = nil
+        end
+
         if WindowObj.Watermark then
             WindowObj.Watermark:Destroy()
         end
@@ -4659,7 +6513,7 @@ function EmperUI:CreateWindow(options)
         WMLabel.TextXAlignment = Enum.TextXAlignment.Left
         WMLabel.RichText = true
 
-        MakeDraggable(WM, WM)
+        WindowObj.WatermarkDragCleanup = MakeDraggable(WM, WM, WindowObj)
 
         task.spawn(function()
             local runService = game:GetService("RunService")
@@ -4667,14 +6521,21 @@ function EmperUI:CreateWindow(options)
             local frames = 0
             local fps = 60
             
-            runService.RenderStepped:Connect(function()
+            local fpsConnection = WindowObj:Connect(runService.RenderStepped, function()
                 frames = frames + 1
             end)
+            WindowObj.WatermarkConnection = fpsConnection
             
-            while task.wait(1) do
+            while WindowObj.Alive
+                and generation == WindowObj.WatermarkGeneration
+                and WM.Parent
+                and task.wait(1) do
                 fps = frames
                 frames = 0
-                local ping = math.floor(stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+                local ping = 0
+                pcall(function()
+                    ping = math.floor(stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+                end)
                 local timeStr = os.date("%H:%M:%S")
                 
                 local finalText = text
@@ -4688,18 +6549,48 @@ function EmperUI:CreateWindow(options)
                 local textBounds = WMLabel.TextBounds
                 TweenService:Create(WM, TweenInfo.new(0.2), {Size = UDim2.new(0, textBounds.X + 24, 0, 26)}):Play()
             end
+
+            pcall(function()
+                fpsConnection:Disconnect()
+            end)
+            if WindowObj.WatermarkConnection == fpsConnection then
+                WindowObj.WatermarkConnection = nil
+            end
         end)
+    end
+
+    function WindowObj:ClearWatermark()
+        WindowObj.WatermarkGeneration = WindowObj.WatermarkGeneration + 1
+        if WindowObj.WatermarkConnection then
+            pcall(function()
+                WindowObj.WatermarkConnection:Disconnect()
+            end)
+            WindowObj.WatermarkConnection = nil
+        end
+        if WindowObj.WatermarkDragCleanup then
+            WindowObj.WatermarkDragCleanup()
+            WindowObj.WatermarkDragCleanup = nil
+        end
+        if WindowObj.Watermark then
+            WindowObj.Watermark:Destroy()
+            WindowObj.Watermark = nil
+        end
     end
 
     -- [ Premium Feature: Aurora Background (Glassmorphism Effect) ]
     function WindowObj:EnableAuroraBackground()
+        WindowObj:DisableAuroraBackground()
+        WindowObj.AuroraGeneration = WindowObj.AuroraGeneration + 1
+        local generation = WindowObj.AuroraGeneration
+
         local AuroraFolder = Instance.new("Folder")
         AuroraFolder.Name = "AuroraEffects"
         AuroraFolder.Parent = MainFrame
+        WindowObj.AuroraFolder = AuroraFolder
         
         local function CreateOrb(size, pos, colorKey)
             local Orb = Instance.new("ImageLabel")
-            Orb.Parent = MainFrame
+            Orb.Parent = AuroraFolder
             Orb.BackgroundTransparency = 1
             Orb.Position = pos
             Orb.Size = size
@@ -4710,7 +6601,9 @@ function EmperUI:CreateWindow(options)
             
             -- Animate Orb floating
             task.spawn(function()
-                while task.wait() do
+                while WindowObj.Alive
+                    and generation == WindowObj.AuroraGeneration
+                    and Orb.Parent do
                     local rx = math.random(-50, 50)
                     local ry = math.random(-50, 50)
                     local time = math.random(5, 10)
@@ -4727,7 +6620,214 @@ function EmperUI:CreateWindow(options)
         CreateOrb(UDim2.new(0, 250, 0, 250), UDim2.new(1, -200, 1, -200), "Accent2")
     end
 
+    function WindowObj:DisableAuroraBackground()
+        WindowObj.AuroraGeneration = WindowObj.AuroraGeneration + 1
+        if WindowObj.AuroraFolder then
+            WindowObj.AuroraFolder:Destroy()
+            WindowObj.AuroraFolder = nil
+        end
+    end
+
+    -- [ Optional Dashboard / Live Showcase ]
+    function WindowObj:CreateDashboardTab(dashboardOptions)
+        dashboardOptions = type(dashboardOptions) == "table" and dashboardOptions or {}
+        if self.Dashboard then return self.Dashboard end
+
+        local tab = self:CreateTab(dashboardOptions.Title or "Dashboard", dashboardOptions.Icon or "activity")
+        local left = tab:CreateSection({Side = "Left", Title = dashboardOptions.StatsTitle or "Live Status"})
+        local right = tab:CreateSection({Side = "Right", Title = dashboardOptions.ActivityTitle or "Activity"})
+        local dashboard = {
+            Tab = tab,
+            Stats = {},
+            Progress = {},
+            Activities = {},
+            MaxActivities = math.clamp(tonumber(dashboardOptions.MaxActivities) or 5, 1, 12),
+            Alive = true,
+        }
+        self.Dashboard = dashboard
+
+        local function safeText(value, fallback)
+            if value == nil then return fallback or "-" end
+            return tostring(value)
+        end
+
+        local defaultStats = {
+            {"status", "Status", "READY"},
+            {"active_tab", "Active Tab", self.ActiveTab or "-"},
+            {"language", "Language", self.GetLanguage and self:GetLanguage() or "English"},
+            {"scale", "UI Scale", string.format("%.0f%%", (self.GetAppliedScale and self:GetAppliedScale() or 1) * 100)},
+        }
+        for _, item in ipairs(defaultStats) do
+            local paragraph = left:Paragraph({Title = item[2], Content = item[3]})
+            dashboard.Stats[item[1]] = {Object = paragraph, Title = item[2], Value = item[3]}
+        end
+
+        local online = right:Badge({Title = "Service", Text = "ONLINE", Color = Theme.Accent})
+        dashboard.StatusBadge = online
+        local activityParagraph = right:Paragraph({Title = "Recent Activity", Content = "No activity yet"})
+        dashboard.ActivityParagraph = activityParagraph
+        local progress = right:Progress({Title = "Showcase Progress", Min = 0, Max = 100, Value = 0})
+        dashboard.Progress.showcase = progress
+
+        function self:SetDashboardStat(id, value, subtitle)
+            if not dashboard.Alive then return false end
+            id = tostring(id or "")
+            if id == "" then return false end
+            local entry = dashboard.Stats[id]
+            if not entry then
+                local title = id:gsub("_", " "):gsub("^%l", string.upper)
+                local paragraph = left:Paragraph({Title = title, Content = safeText(value)})
+                entry = {Object = paragraph, Title = title, Value = ""}
+                dashboard.Stats[id] = entry
+            end
+            local nextValue = safeText(value)
+            if subtitle and tostring(subtitle) ~= "" then
+                nextValue = nextValue .. "\n" .. tostring(subtitle)
+            end
+            if entry.Value == nextValue then return true end
+            entry.Value = nextValue
+            entry.Object:SetContent(nextValue)
+            return true
+        end
+
+        function self:SetDashboardProgress(id, value, maximum)
+            if not dashboard.Alive then return false end
+            id = tostring(id or "showcase")
+            local progressObject = dashboard.Progress[id]
+            if not progressObject then
+                progressObject = right:Progress({Title = id:gsub("_", " "), Min = 0, Max = tonumber(maximum) or 100, Value = 0})
+                dashboard.Progress[id] = progressObject
+            end
+            progressObject:SetValue(tonumber(value) or 0)
+            return true
+        end
+
+        function self:AddActivity(message, kind)
+            if not dashboard.Alive then return false end
+            local prefix = ({success = "[OK]", info = "[INFO]", warning = "[WARN]", error = "[ERROR]"})[string.lower(tostring(kind or "info"))] or "[INFO]"
+            table.insert(dashboard.Activities, prefix .. " " .. safeText(message, "Activity"))
+            while #dashboard.Activities > dashboard.MaxActivities do table.remove(dashboard.Activities, 1) end
+            dashboard.ActivityParagraph:SetContent(table.concat(dashboard.Activities, "\n"))
+            return true
+        end
+
+        function self:ClearActivity()
+            table.clear(dashboard.Activities)
+            dashboard.ActivityParagraph:SetContent("No activity yet")
+        end
+
+        local generation = (self.DashboardGeneration or 0) + 1
+        self.DashboardGeneration = generation
+        if dashboardOptions.Live ~= false then
+            task.spawn(function()
+                while self.Alive and dashboard.Alive and self.DashboardGeneration == generation do
+                    self:SetDashboardStat("active_tab", self.ActiveTab or "-", "Current selection")
+                    self:SetDashboardStat("language", self.GetLanguage and self:GetLanguage() or "English")
+                    self:SetDashboardStat("scale", string.format("%.0f%%", (self.GetAppliedScale and self:GetAppliedScale() or 1) * 100))
+                    task.wait(math.max(1, tonumber(dashboardOptions.Interval) or 2))
+                end
+            end)
+        end
+        return dashboard
+    end
+
+    function WindowObj:CreateThemeStudioTab(studioOptions)
+        studioOptions = type(studioOptions) == "table" and studioOptions or {}
+        if self.ThemeStudio then return self.ThemeStudio end
+        local folderName = studioOptions.Folder or "EmperUI_Themes"
+        local tab = studioOptions.ParentTab or self:CreateTab(studioOptions.Title or "Theme Studio", studioOptions.Icon or "palette")
+        local left = tab:CreateSection({Side = "Left", Title = "Live Colors"})
+        local right = tab:CreateSection({Side = "Right", Title = "Theme Profiles"})
+        local studio = {Tab = tab, Pickers = {}, Folder = folderName}
+        self.ThemeStudio = studio
+
+        if studioOptions.Hidden then
+            left:SetVisible(false)
+            right:SetVisible(false)
+            local launcher = tab:CreateSection({Side = "Left", Title = studioOptions.LauncherTitle or "Theme Studio"})
+            local openButton
+            openButton = launcher:Button({
+                Title = studioOptions.LauncherText or "Open Theme Studio",
+                Desc = "Choose a color or theme profile",
+                Callback = function()
+                    studio.Open = not studio.Open
+                    left:SetVisible(studio.Open)
+                    right:SetVisible(studio.Open)
+                end,
+            })
+            studio.Launcher = launcher
+            studio.Open = false
+        end
+
+        local preview = left:Paragraph({Title = "Preview", Content = "Change a color to update this Window instantly."})
+        local keys = {"Background", "Sidebar", "Topbar", "Accent", "Accent2", "Text", "TextMuted", "ElementBg", "ElementHover", "Border"}
+        for _, key in ipairs(keys) do
+            studio.Pickers[key] = left:Colorpicker({
+                Title = key,
+                Default = Theme[key],
+                Callback = function(color)
+                    self:SetThemeColor(key, color)
+                    preview:SetContent(key .. " updated live")
+                end,
+            })
+        end
+
+        local nameBox = right:TextBox({Title = "Theme Name", Placeholder = "my_theme", Callback = function() end})
+        local themeDropdown = right:Dropdown({Title = "Saved Themes", Values = self:GetThemes(folderName), Default = "Select Theme", Callback = function() end})
+        right:Button({Title = "Save Theme", Callback = function()
+            local name = SanitizeThemeName(nameBox:GetValue())
+            if name ~= "" and self:SaveTheme(folderName, name) then
+                themeDropdown:Refresh(self:GetThemes(folderName), name)
+                preview:SetContent("Saved theme: " .. name)
+            end
+        end})
+        right:Button({Title = "Load Theme", Callback = function()
+            local name = themeDropdown:GetValue()
+            if name and name ~= "" and name ~= "Select Theme" and self:LoadTheme(folderName, name) then
+                for key, picker in pairs(studio.Pickers) do picker:SetColor(Theme[key]) end
+                preview:SetContent("Loaded theme: " .. name)
+            end
+        end})
+        right:Button({Title = "Delete Theme", Callback = function()
+            local name = themeDropdown:GetValue()
+            if name and name ~= "" and name ~= "Select Theme" and self:DeleteTheme(folderName, name) then
+                themeDropdown:Refresh(self:GetThemes(folderName), "Select Theme")
+                preview:SetContent("Deleted theme: " .. name)
+            end
+        end})
+        right:Button({Title = "Reset to Default", Callback = function()
+            for key, color in pairs(EmperUI.Themes.Default) do
+                self:SetThemeColor(key, color)
+                if studio.Pickers[key] then studio.Pickers[key]:SetColor(color) end
+            end
+            preview:SetContent("Reset to Default theme")
+        end})
+        return studio
+    end
+
+    if Environment.EmperUI_KeyGate and not Environment.EmperUI_KeyGate:IsUnlocked() then
+        MainFrame.Visible = false
+        DropShadow.Visible = false
+        Environment.EmperUI_GatedWindows = Environment.EmperUI_GatedWindows or {}
+        table.insert(Environment.EmperUI_GatedWindows, WindowObj)
+    end
     return WindowObj
 end
+
+function EmperUI:Destroy()
+    if Environment.EmperUI_WindowCleanup then
+        pcall(Environment.EmperUI_WindowCleanup)
+    end
+
+    if NotifGui and NotifGui.Parent then
+        NotifGui:Destroy()
+    end
+
+    if Environment.EmperUI_NotificationGui == NotifGui then
+        Environment.EmperUI_NotificationGui = nil
+    end
+end
+
+EmperUI.Unload = EmperUI.Destroy
 
 return EmperUI
