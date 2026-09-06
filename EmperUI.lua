@@ -199,7 +199,7 @@ NotifContainer.Parent = NotifGui
 NotifContainer.BackgroundTransparency = 1
 NotifContainer.AnchorPoint = Vector2.new(1, 1)
 NotifContainer.Position = UDim2.new(1, -18, 1, -18)
-    NotifContainer.Size = UDim2.new(0, 270, 1, -36)
+    NotifContainer.Size = UDim2.new(0, 300, 1, -36)
 NotifContainer.ClipsDescendants = false
 
 local NotifLayout = Instance.new("UIListLayout")
@@ -230,128 +230,160 @@ function EmperUI:Notify(opts)
     local accent   = NotifColors[ntype] or NotifColors.info
     local icon     = NotifIcons[ntype]  or "i"
 
-    -- UIListLayout controls Holder; the Card moves inside it for clean animation.
+    -- Holder controls height in UIListLayout; Card slides inside it.
     local Holder = Instance.new("Frame")
     Holder.Parent = NotifContainer
     Holder.BackgroundTransparency = 1
-    Holder.Size = UDim2.new(1, 0, 0, 62)
+    Holder.Size = UDim2.new(1, 0, 0, 82)
 
     local Card = Instance.new("Frame")
     Card.Parent = Holder
-    Card.BackgroundColor3 = Color3.fromRGB(10, 12, 16)
+    Card.BackgroundColor3 = Color3.fromRGB(12, 14, 20)
     Card.Size = UDim2.new(1, 0, 1, 0)
-    Card.Position = UDim2.new(0, 30, 0, 0)
-    Card.BackgroundTransparency = 0.28
+    Card.Position = UDim2.new(0, 40, 0, 0)  -- slide in from right
+    Card.BackgroundTransparency = 0.12
     Card.BorderSizePixel = 0
     Card.ClipsDescendants = true
 
     local CardCorner = Instance.new("UICorner")
-    CardCorner.CornerRadius = UDim.new(0, 5)
+    CardCorner.CornerRadius = UDim.new(0, 10)
     CardCorner.Parent = Card
 
-    -- Very subtle tint; keeps the toast dark without looking completely black.
+    -- Stronger accent tint gradient (left = accent bleed, right = dark)
     local CardGrad = Instance.new("UIGradient")
     CardGrad.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, accent:Lerp(Color3.fromRGB(10, 12, 16), 0.96)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 12, 16)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 10, 13))
+        ColorSequenceKeypoint.new(0,   accent:Lerp(Color3.fromRGB(12, 14, 20), 0.82)),
+        ColorSequenceKeypoint.new(0.45, Color3.fromRGB(12, 14, 20)),
+        ColorSequenceKeypoint.new(1,   Color3.fromRGB(9, 10, 15))
     })
     CardGrad.Rotation = 0
     CardGrad.Parent = Card
 
-    -- Short accent rail instead of a full-height colored edge.
+    -- Thin top shine strip for glass feel
+    local Shine = Instance.new("Frame")
+    Shine.Parent = Card
+    Shine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Shine.BackgroundTransparency = 0.88
+    Shine.BorderSizePixel = 0
+    Shine.Position = UDim2.new(0, 10, 0, 0)
+    Shine.Size = UDim2.new(1, -20, 0, 1)
+    local ShineCorner = Instance.new("UICorner")
+    ShineCorner.CornerRadius = UDim.new(1, 0)
+    ShineCorner.Parent = Shine
+
+    -- Accent left rail
     local Bar = Instance.new("Frame")
     Bar.Parent = Card
     Bar.BackgroundColor3 = accent
     Bar.BorderSizePixel = 0
-    Bar.Position = UDim2.new(0, 0, 0, 5)
-    Bar.Size = UDim2.new(0, 2, 1, -10)
-
+    Bar.Position = UDim2.new(0, 0, 0, 8)
+    Bar.Size = UDim2.new(0, 3, 1, -16)
     local BarCorner = Instance.new("UICorner")
     BarCorner.CornerRadius = UDim.new(1, 0)
     BarCorner.Parent = Bar
 
+    -- Border stroke (accent-tinted)
     local CardStroke = Instance.new("UIStroke")
-    CardStroke.Color = accent:Lerp(Color3.fromRGB(70, 72, 84), 0.65)
-    CardStroke.Thickness = 1
-    CardStroke.Transparency = 0.35
+    CardStroke.Color = accent:Lerp(Color3.fromRGB(55, 58, 75), 0.55)
+    CardStroke.Thickness = 1.2
+    CardStroke.Transparency = 0.25
     CardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     CardStroke.Parent = Card
 
+    -- Icon background circle (colored, semi-transparent)
     local IconCircle = Instance.new("Frame")
     IconCircle.Parent = Card
-    IconCircle.BackgroundTransparency = 1
-    IconCircle.Position = UDim2.new(0, 14, 0.5, -13)
-    IconCircle.Size = UDim2.new(0, 26, 0, 26)
+    IconCircle.BackgroundColor3 = accent
+    IconCircle.BackgroundTransparency = 0.72
+    IconCircle.Position = UDim2.new(0, 14, 0.5, -16)
+    IconCircle.Size = UDim2.new(0, 32, 0, 32)
     IconCircle.BorderSizePixel = 0
-
     local IconCircleCorner = Instance.new("UICorner")
-    IconCircleCorner.CornerRadius = UDim.new(0, 4)
+    IconCircleCorner.CornerRadius = UDim.new(0, 8)
     IconCircleCorner.Parent = IconCircle
+    -- subtle icon border
+    local IconStroke = Instance.new("UIStroke")
+    IconStroke.Color = accent
+    IconStroke.Thickness = 1
+    IconStroke.Transparency = 0.5
+    IconStroke.Parent = IconCircle
 
     local IconLabel = Instance.new("TextLabel")
     IconLabel.Parent = IconCircle
     IconLabel.BackgroundTransparency = 1
     IconLabel.Size = UDim2.new(1, 0, 1, 0)
     IconLabel.Font = Enum.Font.GothamBold
-    IconLabel.TextSize = 12
+    IconLabel.TextSize = 15
     IconLabel.TextColor3 = accent
     IconLabel.Text = icon
     IconLabel.TextXAlignment = Enum.TextXAlignment.Center
+    IconLabel.TextYAlignment = Enum.TextYAlignment.Center
 
+    -- Title
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Parent = Card
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Position = UDim2.new(0, 48, 0, 8)
-    TitleLabel.Size = UDim2.new(1, -70, 0, 18)
+    TitleLabel.Position = UDim2.new(0, 56, 0, 13)
+    TitleLabel.Size = UDim2.new(1, -78, 0, 20)
     TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.TextSize = 13
-    TitleLabel.TextColor3 = Color3.fromRGB(237, 239, 247)
+    TitleLabel.TextSize = 14
+    TitleLabel.TextColor3 = Color3.fromRGB(242, 244, 252)
     TitleLabel.Text = title
     TitleLabel.TextTruncate = Enum.TextTruncate.AtEnd
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
+    -- Message
     local MsgLabel = Instance.new("TextLabel")
     MsgLabel.Parent = Card
     MsgLabel.BackgroundTransparency = 1
-    MsgLabel.Position = UDim2.new(0, 48, 0, 28)
-    MsgLabel.Size = UDim2.new(1, -62, 0, 18)
+    MsgLabel.Position = UDim2.new(0, 56, 0, 36)
+    MsgLabel.Size = UDim2.new(1, -70, 0, 32)
     MsgLabel.Font = Enum.Font.Gotham
     MsgLabel.TextSize = 12
-    MsgLabel.TextColor3 = Color3.fromRGB(153, 157, 172)
+    MsgLabel.TextColor3 = Color3.fromRGB(148, 153, 172)
     MsgLabel.Text = message
+    MsgLabel.TextWrapped = true
     MsgLabel.TextTruncate = Enum.TextTruncate.AtEnd
     MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
+    MsgLabel.TextYAlignment = Enum.TextYAlignment.Top
 
+    -- Close button
     local CloseButton = Instance.new("TextButton")
     CloseButton.Parent = Card
     CloseButton.AnchorPoint = Vector2.new(1, 0)
-    CloseButton.Position = UDim2.new(1, -5, 0, 4)
-    CloseButton.Size = UDim2.new(0, 18, 0, 18)
-    CloseButton.BackgroundTransparency = 1
+    CloseButton.Position = UDim2.new(1, -6, 0, 5)
+    CloseButton.Size = UDim2.new(0, 20, 0, 20)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    CloseButton.BackgroundTransparency = 0.92
     CloseButton.Font = Enum.Font.GothamBold
-    CloseButton.Text = "x"
-    CloseButton.TextColor3 = Color3.fromRGB(105, 108, 120)
-    CloseButton.TextSize = 10
+    CloseButton.Text = "✕"
+    CloseButton.TextColor3 = Color3.fromRGB(110, 114, 135)
+    CloseButton.TextSize = 9
     CloseButton.AutoButtonColor = false
+    CloseButton.BorderSizePixel = 0
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 5)
+    CloseCorner.Parent = CloseButton
 
+    -- Timer progress bar (bottom, 2px thick)
     local TimerBar = Instance.new("Frame")
     TimerBar.Parent = Card
     TimerBar.BackgroundColor3 = accent
-    TimerBar.BackgroundTransparency = 0.15
+    TimerBar.BackgroundTransparency = 0.1
     TimerBar.BorderSizePixel = 0
     TimerBar.AnchorPoint = Vector2.new(0, 1)
-    TimerBar.Position = UDim2.new(0, 3, 1, -2)
-    TimerBar.Size = UDim2.new(1, -6, 0, 1)
-
+    TimerBar.Position = UDim2.new(0, 4, 1, -2)
+    TimerBar.Size = UDim2.new(1, -8, 0, 2)
     local TimerCorner = Instance.new("UICorner")
     TimerCorner.CornerRadius = UDim.new(1, 0)
     TimerCorner.Parent = TimerBar
 
-    TweenService:Create(Card, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+    -- Slide in
+    TweenService:Create(Card, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 0, 0, 0),
     }):Play()
 
+    -- Timer shrink
     TweenService:Create(TimerBar, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
         Size = UDim2.new(0, 0, 0, 2)
     }):Play()
@@ -360,31 +392,29 @@ function EmperUI:Notify(opts)
     local function dismiss()
         if dismissed or not Holder.Parent then return end
         dismissed = true
-        local out = TweenService:Create(Card, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-            Position = UDim2.new(0, 30, 0, 0),
+        local out = TweenService:Create(Card, TweenInfo.new(0.28, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Position = UDim2.new(0, 40, 0, 0),
             BackgroundTransparency = 1
         })
         out:Play()
-        out.Completed:Connect(function()
-            Holder:Destroy()
-        end)
+        out.Completed:Connect(function() Holder:Destroy() end)
     end
 
     CloseButton.MouseEnter:Connect(function()
         TweenService:Create(CloseButton, TweenInfo.new(0.15), {
-            TextColor3 = Color3.fromRGB(225, 227, 235)
+            TextColor3 = Color3.fromRGB(220, 223, 238),
+            BackgroundTransparency = 0.78,
         }):Play()
     end)
     CloseButton.MouseLeave:Connect(function()
         TweenService:Create(CloseButton, TweenInfo.new(0.15), {
-            TextColor3 = Color3.fromRGB(105, 108, 120)
+            TextColor3 = Color3.fromRGB(110, 114, 135),
+            BackgroundTransparency = 0.92,
         }):Play()
     end)
     CloseButton.MouseButton1Click:Connect(dismiss)
 
-    task.delay(duration, function()
-        dismiss()
-    end)
+    task.delay(duration, dismiss)
 end
 
 
