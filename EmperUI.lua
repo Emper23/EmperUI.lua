@@ -221,7 +221,7 @@ local NotifIcons = {
     info    = "i",
 }
 
-function EmperUI:Notify(opts)
+local function RenderNotification(opts)
     opts = opts or {}
     local title    = opts.Title    or "Notification"
     local message  = opts.Message  or ""
@@ -417,6 +417,41 @@ function EmperUI:Notify(opts)
     task.delay(duration, dismiss)
 end
 
+
+
+local NotificationQueue = {}
+local NotificationWorkerRunning = true
+
+task.spawn(function()
+    while NotificationWorkerRunning do
+        local nextNotification = table.remove(NotificationQueue, 1)
+
+        if nextNotification then
+            local ok, err = pcall(RenderNotification, nextNotification)
+
+            if not ok then
+                warn("[EmperUI] Notification render failed: " .. tostring(err))
+            end
+        else
+            task.wait(0.03)
+        end
+    end
+end)
+
+function EmperUI:Notify(opts)
+    opts = opts or {}
+
+    if #NotificationQueue >= 24 then
+        table.remove(NotificationQueue, 1)
+    end
+
+    NotificationQueue[#NotificationQueue + 1] = {
+        Title = opts.Title,
+        Message = opts.Message,
+        Duration = opts.Duration,
+        Type = opts.Type,
+    }
+end
 
 local function MakeDraggable(topbarObject, object, connectionOwner)
     local Dragging, DragInput, DragStart, StartPosition
