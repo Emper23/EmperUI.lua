@@ -4542,8 +4542,9 @@ function EmperUI:CreateWindow(options)
                 local ArrowIcon = Instance.new("ImageLabel")
                 ArrowIcon.Parent = DropdownFrame
                 ArrowIcon.BackgroundTransparency = 1
-                ArrowIcon.Position = descText and UDim2.new(1, -30, 0, 19) or UDim2.new(1, -30, 0, 12)
-                ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
+                ArrowIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+                ArrowIcon.Position = UDim2.new(1, -21, 0, 21)
+                ArrowIcon.Size = UDim2.new(0, 16, 0, 16)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
                 ArrowIcon.ZIndex = 2
@@ -4817,8 +4818,9 @@ function EmperUI:CreateWindow(options)
                 local ArrowIcon = Instance.new("ImageLabel")
                 ArrowIcon.Parent = DropdownFrame
                 ArrowIcon.BackgroundTransparency = 1
-                ArrowIcon.Position = UDim2.new(1, -30, 0, 12)
-                ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
+                ArrowIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+                ArrowIcon.Position = UDim2.new(1, -21, 0, 21)
+                ArrowIcon.Size = UDim2.new(0, 16, 0, 16)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
                 ArrowIcon.ZIndex = 2
