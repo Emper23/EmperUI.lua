@@ -4492,8 +4492,8 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(DropdownFrame, "BackgroundColor3", "ElementBg")
                 DropdownFrame.Size = UDim2.new(1, 0, 0, baseHeight)
                 DropdownFrame.BorderSizePixel = 0
-                DropdownFrame.ClipsDescendants = false
-                DropdownFrame.ZIndex = 20
+                DropdownFrame.ClipsDescendants = true
+                DropdownFrame.ZIndex = 1
                 Section:_RegisterControl(DropdownFrame, arg1, dropdownText, "Dropdown", descText)
 
                 local DpCorner = Instance.new("UICorner")
@@ -4511,7 +4511,7 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
                 HeaderBtn.Font = Enum.Font.GothamMedium
                 HeaderBtn.Text = ""
-                HeaderBtn.ZIndex = 22
+                HeaderBtn.ZIndex = 2
 
                 local Label = Instance.new("TextLabel")
                 Label.Parent = DropdownFrame
@@ -4524,7 +4524,7 @@ function EmperUI:CreateWindow(options)
                 Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
-                Label.ZIndex = 22
+                Label.ZIndex = 2
 
                 local SelLabel = Instance.new("TextLabel")
                 SelLabel.Parent = DropdownFrame
@@ -4537,7 +4537,7 @@ function EmperUI:CreateWindow(options)
                 SelLabel.TextSize = 15
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
-                SelLabel.ZIndex = 22
+                SelLabel.ZIndex = 2
 
                 local ArrowIcon = Instance.new("ImageLabel")
                 ArrowIcon.Parent = DropdownFrame
@@ -4546,7 +4546,7 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
-                ArrowIcon.ZIndex = 22
+                ArrowIcon.ZIndex = 2
 
                 local OptionContainer = Instance.new("ScrollingFrame")
                 OptionContainer.Name = "OptionContainer"
@@ -4563,7 +4563,7 @@ function EmperUI:CreateWindow(options)
                 OptionContainer.Active = true
                 OptionContainer.ScrollingEnabled = true
                 OptionContainer.ClipsDescendants = true
-                OptionContainer.ZIndex = 100
+                OptionContainer.ZIndex = 2
                 WindowObj:ApplyTheme(OptionContainer, "ScrollBarImageColor3", "Accent")
 
                 local OptionCorner = Instance.new("UICorner")
@@ -4590,12 +4590,16 @@ function EmperUI:CreateWindow(options)
                 local function UpdateDropdownSize()
                     local contentHeight = OptionLayout.AbsoluteContentSize.Y + 8
                     local visibleHeight = Expanded and math.min(contentHeight, maxDropdownHeight) or 0
+                    local dropdownGap = Expanded and 8 or 0
+                    local targetHeight = baseHeight + visibleHeight + dropdownGap
 
-                    -- Overlay dropdown: never change the layout height of the parent section.
-                    DropdownFrame.Size = UDim2.new(1, 0, 0, baseHeight)
-                    DropdownFrame.ZIndex = Expanded and 90 or 20
                     OptionContainer.Visible = Expanded
+                    OptionContainer.Position = UDim2.new(0, 0, 0, baseHeight + (Expanded and 4 or 0))
                     OptionContainer.Size = UDim2.new(1, 0, 0, visibleHeight)
+
+                    TweenService:Create(DropdownFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quart), {
+                        Size = UDim2.new(1, 0, 0, targetHeight)
+                    }):Play()
 
                     TweenService:Create(ArrowIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
                         Rotation = Expanded and 180 or 0
@@ -4615,7 +4619,7 @@ function EmperUI:CreateWindow(options)
                     OptBtn.TextSize = 12
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.AutoButtonColor = false
-                    OptBtn.ZIndex = 102
+                    OptBtn.ZIndex = 3
 
                     local OptCorner = Instance.new("UICorner")
                     OptCorner.CornerRadius = UDim.new(0, 4)
@@ -4753,8 +4757,8 @@ function EmperUI:CreateWindow(options)
                 WindowObj:ApplyTheme(DropdownFrame, "BackgroundColor3", "ElementBg")
                 DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
                 DropdownFrame.BorderSizePixel = 0
-                DropdownFrame.ClipsDescendants = false
-                DropdownFrame.ZIndex = 20
+                DropdownFrame.ClipsDescendants = true
+                DropdownFrame.ZIndex = 1
                 Section:_RegisterControl(DropdownFrame, arg1, dropdownText, "MultiDropdown")
 
                 local DpCorner = Instance.new("UICorner")
@@ -4772,7 +4776,7 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
                 HeaderBtn.Font = Enum.Font.GothamMedium
                 HeaderBtn.Text = ""
-                HeaderBtn.ZIndex = 22
+                HeaderBtn.ZIndex = 2
 
                 local Label = Instance.new("TextLabel")
                 Label.Parent = DropdownFrame
@@ -4785,7 +4789,7 @@ function EmperUI:CreateWindow(options)
                 Label.TextSize = 15
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
-                Label.ZIndex = 22
+                Label.ZIndex = 2
 
                 local SelLabel = Instance.new("TextLabel")
                 SelLabel.Parent = DropdownFrame
@@ -4808,7 +4812,7 @@ function EmperUI:CreateWindow(options)
                 SelLabel.TextSize = 15
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
-                SelLabel.ZIndex = 22
+                SelLabel.ZIndex = 2
 
                 local ArrowIcon = Instance.new("ImageLabel")
                 ArrowIcon.Parent = DropdownFrame
@@ -4817,7 +4821,7 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Size = UDim2.new(0, 18, 0, 18)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
-                ArrowIcon.ZIndex = 22
+                ArrowIcon.ZIndex = 2
 
                 local OptionContainer = Instance.new("ScrollingFrame")
                 OptionContainer.Name = "OptionContainer"
@@ -4834,7 +4838,7 @@ function EmperUI:CreateWindow(options)
                 OptionContainer.Active = true
                 OptionContainer.ScrollingEnabled = true
                 OptionContainer.ClipsDescendants = true
-                OptionContainer.ZIndex = 100
+                OptionContainer.ZIndex = 2
                 WindowObj:ApplyTheme(OptionContainer, "ScrollBarImageColor3", "Accent")
 
                 local OptionCorner = Instance.new("UICorner")
@@ -4861,12 +4865,16 @@ function EmperUI:CreateWindow(options)
                 local function UpdateDropdownSize()
                     local contentHeight = OptionLayout.AbsoluteContentSize.Y + 8
                     local visibleHeight = Expanded and math.min(contentHeight, maxDropdownHeight) or 0
+                    local dropdownGap = Expanded and 8 or 0
+                    local targetHeight = 42 + visibleHeight + dropdownGap
 
-                    -- Overlay dropdown: never change the layout height of the parent section.
-                    DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
-                    DropdownFrame.ZIndex = Expanded and 90 or 20
                     OptionContainer.Visible = Expanded
+                    OptionContainer.Position = UDim2.new(0, 0, 0, 42 + (Expanded and 4 or 0))
                     OptionContainer.Size = UDim2.new(1, 0, 0, visibleHeight)
+
+                    TweenService:Create(DropdownFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quart), {
+                        Size = UDim2.new(1, 0, 0, targetHeight)
+                    }):Play()
 
                     TweenService:Create(ArrowIcon, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
                         Rotation = Expanded and 180 or 0
@@ -4888,7 +4896,7 @@ function EmperUI:CreateWindow(options)
                     OptBtn.TextSize = 12
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.AutoButtonColor = false
-                    OptBtn.ZIndex = 102
+                    OptBtn.ZIndex = 3
 
                     local OptCorner = Instance.new("UICorner")
                     OptCorner.CornerRadius = UDim.new(0, 4)
