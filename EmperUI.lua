@@ -4477,6 +4477,13 @@ function EmperUI:CreateWindow(options)
                 options = options or {}
                 local CurrentOption = defaultOption or options[1] or ""
                 local Expanded = false
+                local maxDropdownHeight = 190
+
+                if type(arg1) == "table" then
+                    maxDropdownHeight = tonumber(arg1.MaxHeight or arg1.DropdownHeight) or maxDropdownHeight
+                end
+
+                maxDropdownHeight = math.clamp(maxDropdownHeight, 90, 320)
                 
                 local baseHeight = descText and 56 or 42
                 
@@ -4536,12 +4543,20 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
 
-                local OptionContainer = Instance.new("Frame")
+                local OptionContainer = Instance.new("ScrollingFrame")
                 OptionContainer.Name = "OptionContainer"
                 OptionContainer.Parent = DropdownFrame
                 OptionContainer.BackgroundTransparency = 1
-                OptionContainer.Position = UDim2.new(0, 0, 0, 42)
+                OptionContainer.BorderSizePixel = 0
+                OptionContainer.Position = UDim2.new(0, 0, 0, baseHeight)
                 OptionContainer.Size = UDim2.new(1, 0, 0, 0)
+                OptionContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+                OptionContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+                OptionContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+                OptionContainer.ScrollBarThickness = 3
+                OptionContainer.Active = true
+                OptionContainer.ClipsDescendants = true
+                WindowObj:ApplyTheme(OptionContainer, "ScrollBarImageColor3", "Accent")
 
                 local OptionLayout = Instance.new("UIListLayout")
                 OptionLayout.Parent = OptionContainer
@@ -4556,10 +4571,16 @@ function EmperUI:CreateWindow(options)
                 OptionPadding.PaddingBottom = UDim.new(0, 4)
 
                 local function UpdateDropdownSize()
-                    local targetHeight = Expanded and (42 + OptionLayout.AbsoluteContentSize.Y + 8) or 42
+                    local contentHeight = OptionLayout.AbsoluteContentSize.Y + 8
+                    local visibleHeight = Expanded and math.min(contentHeight, maxDropdownHeight) or 0
+
+                    OptionContainer.Visible = Expanded
+                    OptionContainer.Size = UDim2.new(1, 0, 0, visibleHeight)
+
                     TweenService:Create(DropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-                        Size = UDim2.new(1, 0, 0, targetHeight)
+                        Size = UDim2.new(1, 0, 0, baseHeight + visibleHeight)
                     }):Play()
+
                     TweenService:Create(ArrowIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
                         Rotation = Expanded and 180 or 0
                     }):Play()
@@ -4641,13 +4662,7 @@ function EmperUI:CreateWindow(options)
                 end)
 
                 OptionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                    if Expanded then
-                        OptionContainer.Size = UDim2.new(1, 0, 0, OptionLayout.AbsoluteContentSize.Y + 8)
-                        DropdownFrame.Size = UDim2.new(1, 0, 0, 42 + OptionLayout.AbsoluteContentSize.Y + 8)
-                    else
-                        OptionContainer.Size = UDim2.new(1, 0, 0, 0)
-                        DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
-                    end
+                    UpdateDropdownSize()
                 end)
 
                 function DropdownObj:Refresh(newOptions, newDefault)
@@ -4658,6 +4673,7 @@ function EmperUI:CreateWindow(options)
                     
                     CurrentOption = newDefault or newOptions[1] or ""
                     SelLabel.Text = tostring(CurrentOption)
+                    OptionContainer.CanvasPosition = Vector2.new(0, 0)
 
                     for _, option in ipairs(newOptions) do
                         CreateOptionButton(option)
@@ -4707,6 +4723,13 @@ function EmperUI:CreateWindow(options)
                 options = options or {}
                 local CurrentOptions = type(defaultOptions) == "table" and defaultOptions or {}
                 local Expanded = false
+                local maxDropdownHeight = 190
+
+                if type(arg1) == "table" then
+                    maxDropdownHeight = tonumber(arg1.MaxHeight or arg1.DropdownHeight) or maxDropdownHeight
+                end
+
+                maxDropdownHeight = math.clamp(maxDropdownHeight, 90, 320)
                 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
@@ -4774,12 +4797,20 @@ function EmperUI:CreateWindow(options)
                 ArrowIcon.Image = "rbxassetid://10709790948" 
                 WindowObj:ApplyTheme(ArrowIcon, "ImageColor3", "TextMuted")
 
-                local OptionContainer = Instance.new("Frame")
+                local OptionContainer = Instance.new("ScrollingFrame")
                 OptionContainer.Name = "OptionContainer"
                 OptionContainer.Parent = DropdownFrame
                 OptionContainer.BackgroundTransparency = 1
+                OptionContainer.BorderSizePixel = 0
                 OptionContainer.Position = UDim2.new(0, 0, 0, 42)
                 OptionContainer.Size = UDim2.new(1, 0, 0, 0)
+                OptionContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+                OptionContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+                OptionContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+                OptionContainer.ScrollBarThickness = 3
+                OptionContainer.Active = true
+                OptionContainer.ClipsDescendants = true
+                WindowObj:ApplyTheme(OptionContainer, "ScrollBarImageColor3", "Accent")
 
                 local OptionLayout = Instance.new("UIListLayout")
                 OptionLayout.Parent = OptionContainer
@@ -4794,10 +4825,16 @@ function EmperUI:CreateWindow(options)
                 OptionPadding.PaddingBottom = UDim.new(0, 4)
 
                 local function UpdateDropdownSize()
-                    local targetHeight = Expanded and (42 + OptionLayout.AbsoluteContentSize.Y + 8) or 42
+                    local contentHeight = OptionLayout.AbsoluteContentSize.Y + 8
+                    local visibleHeight = Expanded and math.min(contentHeight, maxDropdownHeight) or 0
+
+                    OptionContainer.Visible = Expanded
+                    OptionContainer.Size = UDim2.new(1, 0, 0, visibleHeight)
+
                     TweenService:Create(DropdownFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-                        Size = UDim2.new(1, 0, 0, targetHeight)
+                        Size = UDim2.new(1, 0, 0, 42 + visibleHeight)
                     }):Play()
+
                     TweenService:Create(ArrowIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
                         Rotation = Expanded and 180 or 0
                     }):Play()
@@ -4882,6 +4919,10 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.MouseButton1Click:Connect(function()
                     Expanded = not Expanded
                     UpdateDropdownSize()
+                end
+
+                OptionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                    UpdateDropdownSize()
                 end)
 
                 function MultiDropdownObj:Refresh(newOptions, newDefault)
@@ -4891,6 +4932,7 @@ function EmperUI:CreateWindow(options)
                     MultiDropdownObj.Options = {}
                     options = newOptions or {}
                     CurrentOptions = type(newDefault) == "table" and newDefault or {}
+                    OptionContainer.CanvasPosition = Vector2.new(0, 0)
                     UpdateSelLabel()
                     
                     for _, option in ipairs(options) do
