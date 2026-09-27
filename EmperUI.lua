@@ -4953,7 +4953,7 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.MouseButton1Click:Connect(function()
                     Expanded = not Expanded
                     UpdateDropdownSize()
-                end
+                end)
 
                 OptionLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                     UpdateDropdownSize()
