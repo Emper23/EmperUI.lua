@@ -1415,8 +1415,8 @@ function EmperUI:CreateWindow(options)
             local availableHeight = math.max(1, viewport.Y - 32)
             FitScale = math.min(
                 1,
-                availableWidth / math.max(1, WindowSize.X.Offset),
-                availableHeight / math.max(1, WindowSize.Y.Offset)
+                availableWidth / math.max(1, MainFrame.Size.X.Offset),
+                availableHeight / math.max(1, MainFrame.Size.Y.Offset)
             )
         end
         ApplyCombinedScale()
@@ -2054,41 +2054,252 @@ function EmperUI:CreateWindow(options)
     UpdateShadow()
 
     local ResizeHandle = Instance.new("TextButton")
+    ResizeHandle.Name = "ResizeHandle"
     ResizeHandle.Parent = MainFrame
     ResizeHandle.BackgroundTransparency = 1
-    ResizeHandle.Position = UDim2.new(1, -15, 1, -15)
-    ResizeHandle.Size = UDim2.new(0, 15, 0, 15)
+    ResizeHandle.AnchorPoint = Vector2.new(1, 1)
+    ResizeHandle.Position = UDim2.new(1, -4, 1, -4)
+    ResizeHandle.Size = UDim2.new(0, 24, 0, 24)
     ResizeHandle.Text = "◢"
-    ResizeHandle.TextSize = 14
+    ResizeHandle.TextSize = 13
+    ResizeHandle.AutoButtonColor = false
     WindowObj:ApplyTheme(ResizeHandle, "TextColor3", "TextMuted")
     ResizeHandle.ZIndex = 100
-    
+
     local Resizing = false
     local ResizeStart
-    local StartScale
-    
+    local ResizeStartSize
+    local ResizeStartPosition
+    local ResizeAppliedScale = 1
+    local ResizeTouchInput = nil
+
+    local MinWindowWidth = math.max(
+        520,
+        tonumber(options.MinWidth) or 560
+    )
+    local MinWindowHeight = math.max(
+        320,
+        tonumber(options.MinHeight) or 360
+    )
+    local MaxWindowWidth = math.max(
+        MinWindowWidth,
+        tonumber(options.MaxWidth) or 1200
+    )
+    local MaxWindowHeight = math.max(
+        MinWindowHeight,
+        tonumber(options.MaxHeight) or 820
+    )
+
+    function WindowObj:SetWindowSize(width, height)
+        width = math.max(
+            MinWindowWidth,
+            tonumber(width) or MainFrame.Size.X.Offset
+        )
+        height = math.max(
+            MinWindowHeight,
+            tonumber(height) or MainFrame.Size.Y.Offset
+        )
+
+        local camera = workspace.CurrentCamera
+        local scale = math.max(MainScale.Scale, 0.01)
+
+        if camera then
+            local viewport = camera.ViewportSize
+            local topLeft = MainFrame.AbsolutePosition
+
+            local availableWidth = math.max(
+                MinWindowWidth,
+                (viewport.X - topLeft.X - 12) / scale
+            )
+            local availableHeight = math.max(
+                MinWindowHeight,
+                (viewport.Y - topLeft.Y - 12) / scale
+            )
+
+            width = math.min(
+                width,
+                MaxWindowWidth,
+                availableWidth
+            )
+            height = math.min(
+                height,
+                MaxWindowHeight,
+                availableHeight
+            )
+        else
+            width = math.min(width, MaxWindowWidth)
+            height = math.min(height, MaxWindowHeight)
+        end
+
+        MainFrame.Size = UDim2.fromOffset(
+            math.floor(width + 0.5),
+            math.floor(height + 0.5)
+        )
+
+        return MainFrame.Size
+    end
+
+    function WindowObj:GetWindowSize()
+        return Vector2.new(
+            MainFrame.Size.X.Offset,
+            MainFrame.Size.Y.Offset
+        )
+    end
+
+    ResizeHandle.MouseEnter:Connect(function()
+        WindowObj:Tween(
+            ResizeHandle,
+            TweenInfo.new(0.12),
+            { TextColor3 = Theme.Accent }
+        )
+    end)
+
+    ResizeHandle.MouseLeave:Connect(function()
+        if not Resizing then
+            WindowObj:Tween(
+                ResizeHandle,
+                TweenInfo.new(0.12),
+                { TextColor3 = Theme.TextMuted }
+            )
+        end
+    end)
+
     ResizeHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Resizing = true
-            ResizeStart = input.Position
-            StartScale = UserScale
+        local isMouse =
+            input.UserInputType == Enum.UserInputType.MouseButton1
+        local isTouch =
+            input.UserInputType == Enum.UserInputType.Touch
+
+        if not isMouse and not isTouch then
+            return
         end
+
+        Resizing = true
+        ResizeTouchInput = isTouch and input or nil
+        ResizeStart = input.Position
+        ResizeStartSize = Vector2.new(
+            MainFrame.Size.X.Offset,
+            MainFrame.Size.Y.Offset
+        )
+        ResizeStartPosition = MainFrame.Position
+        ResizeAppliedScale = math.max(MainScale.Scale, 0.01)
+
+        ResizeHandle.TextColor3 = Theme.Accent
     end)
-    
+
     WindowObj:Connect(UserInputService.InputChanged, function(input)
-        if Resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - ResizeStart
-            local baseWidth = WindowSize.X.Offset
-            local scaleDelta = delta.X / baseWidth
-            local targetScale = math.clamp(StartScale + scaleDelta, MinScale, MaxScale)
-            WindowObj:SetScale(targetScale)
+        if not Resizing then
+            return
         end
+
+        local isMouse =
+            input.UserInputType == Enum.UserInputType.MouseMovement
+        local isTouch =
+            input.UserInputType == Enum.UserInputType.Touch
+            and input == ResizeTouchInput
+
+        if not isMouse and not isTouch then
+            return
+        end
+
+        local delta = input.Position - ResizeStart
+        local baseDelta = delta / ResizeAppliedScale
+
+        local targetWidth = ResizeStartSize.X + baseDelta.X
+        local targetHeight = ResizeStartSize.Y + baseDelta.Y
+
+        local camera = workspace.CurrentCamera
+        local maxWidth = MaxWindowWidth
+        local maxHeight = MaxWindowHeight
+
+        if camera then
+            local viewport = camera.ViewportSize
+            local startAbsolutePosition =
+                MainFrame.AbsolutePosition
+
+            maxWidth = math.min(
+                maxWidth,
+                math.max(
+                    MinWindowWidth,
+                    ResizeStartSize.X
+                        + (viewport.X
+                            - startAbsolutePosition.X
+                            - MainFrame.AbsoluteSize.X
+                            - 12)
+                            / ResizeAppliedScale
+                )
+            )
+
+            maxHeight = math.min(
+                maxHeight,
+                math.max(
+                    MinWindowHeight,
+                    ResizeStartSize.Y
+                        + (viewport.Y
+                            - startAbsolutePosition.Y
+                            - MainFrame.AbsoluteSize.Y
+                            - 12)
+                            / ResizeAppliedScale
+                )
+            )
+        end
+
+        targetWidth = math.clamp(
+            targetWidth,
+            MinWindowWidth,
+            maxWidth
+        )
+        targetHeight = math.clamp(
+            targetHeight,
+            MinWindowHeight,
+            maxHeight
+        )
+
+        local widthDelta =
+            (targetWidth - ResizeStartSize.X)
+                * ResizeAppliedScale
+        local heightDelta =
+            (targetHeight - ResizeStartSize.Y)
+                * ResizeAppliedScale
+
+        -- MainFrame is centered with AnchorPoint 0.5,0.5.
+        -- Move its center by half the visual size delta so the
+        -- top-left corner stays fixed while the bottom-right follows
+        -- the cursor naturally.
+        MainFrame.Position =
+            ResizeStartPosition
+            + UDim2.fromOffset(
+                widthDelta * 0.5,
+                heightDelta * 0.5
+            )
+
+        MainFrame.Size = UDim2.fromOffset(
+            math.floor(targetWidth + 0.5),
+            math.floor(targetHeight + 0.5)
+        )
     end)
-    
+
     WindowObj:Connect(UserInputService.InputEnded, function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Resizing = false
+        local isMouse =
+            input.UserInputType == Enum.UserInputType.MouseButton1
+        local isTouch =
+            input.UserInputType == Enum.UserInputType.Touch
+            and (not ResizeTouchInput or input == ResizeTouchInput)
+
+        if not Resizing or (not isMouse and not isTouch) then
+            return
         end
+
+        Resizing = false
+        ResizeTouchInput = nil
+
+        WindowObj:Tween(
+            ResizeHandle,
+            TweenInfo.new(0.12),
+            { TextColor3 = Theme.TextMuted }
+        )
+
+        UpdateResponsiveScale()
     end)
 
     WindowObj.ToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
