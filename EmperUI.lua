@@ -3765,21 +3765,46 @@ function EmperUI:CreateWindow(options)
             WindowObj:ApplyTheme(TabIcon, "ImageColor3", "TextMuted")
         end
 
-        local Page = Instance.new("ScrollingFrame")
+        local Page = Instance.new("Frame")
         Page.Parent = ContentArea
         Page.BackgroundTransparency = 1
         Page.Size = UDim2.new(1, 0, 1, 0)
-        Page.ScrollBarThickness = 2
-        WindowObj:ApplyTheme(Page, "ScrollBarImageColor3", "Border")
         Page.Visible = false
         Page.BorderSizePixel = 0
+        Page.ClipsDescendants = true
+
+        -- Each column owns its own ScrollingFrame so wheel/drag input
+        -- only moves the column currently under the cursor.
+        local LeftScroll = Instance.new("ScrollingFrame")
+        LeftScroll.Name = "LeftScroll"
+        LeftScroll.Parent = Page
+        LeftScroll.BackgroundTransparency = 1
+        LeftScroll.BorderSizePixel = 0
+        LeftScroll.Position = UDim2.new(0, 0, 0, 0)
+        LeftScroll.Size = UDim2.new(0.5, -1, 1, 0)
+        LeftScroll.ScrollBarThickness = 2
+        LeftScroll.ScrollingDirection = Enum.ScrollingDirection.Y
+        LeftScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        WindowObj:ApplyTheme(LeftScroll, "ScrollBarImageColor3", "Border")
+
+        local RightScroll = Instance.new("ScrollingFrame")
+        RightScroll.Name = "RightScroll"
+        RightScroll.Parent = Page
+        RightScroll.BackgroundTransparency = 1
+        RightScroll.BorderSizePixel = 0
+        RightScroll.Position = UDim2.new(0.5, 1, 0, 0)
+        RightScroll.Size = UDim2.new(0.5, -1, 1, 0)
+        RightScroll.ScrollBarThickness = 2
+        RightScroll.ScrollingDirection = Enum.ScrollingDirection.Y
+        RightScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+        WindowObj:ApplyTheme(RightScroll, "ScrollBarImageColor3", "Border")
 
         -- 2-Column Layout Containers
         local LeftCol = Instance.new("Frame")
         LeftCol.Name = "LeftCol"
-        LeftCol.Parent = Page
+        LeftCol.Parent = LeftScroll
         LeftCol.BackgroundTransparency = 1
-        LeftCol.Size = UDim2.new(0.5, -20, 1, 0)
+        LeftCol.Size = UDim2.new(1, -24, 0, 0)
         LeftCol.Position = UDim2.new(0, 12, 0, 16)
 
         local LeftLayout = Instance.new("UIListLayout")
@@ -3789,10 +3814,10 @@ function EmperUI:CreateWindow(options)
 
         local RightCol = Instance.new("Frame")
         RightCol.Name = "RightCol"
-        RightCol.Parent = Page
+        RightCol.Parent = RightScroll
         RightCol.BackgroundTransparency = 1
-        RightCol.Size = UDim2.new(0.5, -20, 1, 0)
-        RightCol.Position = UDim2.new(0.5, 8, 0, 16)
+        RightCol.Size = UDim2.new(1, -24, 0, 0)
+        RightCol.Position = UDim2.new(0, 12, 0, 16)
 
         local RightLayout = Instance.new("UIListLayout")
         RightLayout.Parent = RightCol
@@ -3805,7 +3830,7 @@ function EmperUI:CreateWindow(options)
         WindowObj:ApplyTheme(Divider, "BackgroundColor3", "Border")
         Divider.BorderSizePixel = 0
         Divider.Position = UDim2.new(0.5, -1, 0, 16)
-        Divider.Size = UDim2.new(0, 2, 0, 0)
+        Divider.Size = UDim2.new(0, 2, 1, -32)
         
         local tabIndex = #WindowObj.Tabs + 1
         local indicatorY = 164 + (tabIndex - 1) * 40 + 10
@@ -3822,27 +3847,32 @@ function EmperUI:CreateWindow(options)
         local function UpdateCanvas()
             local leftSize = LeftLayout.AbsoluteContentSize.Y
             local rightSize = RightLayout.AbsoluteContentSize.Y
-            
-            LeftCol.Size = UDim2.new(0.5, -20, 0, leftSize)
-            RightCol.Size = UDim2.new(0.5, -20, 0, rightSize)
-            
-            local maxSize = math.max(leftSize, rightSize)
-            local yOffset = LeftCol.Position.Y.Offset
-            Page.CanvasSize = UDim2.new(0, 0, 0, maxSize + yOffset + 32)
-            
-            local visibleHeight = Page.AbsoluteWindowSize.Y > 0 and (Page.AbsoluteWindowSize.Y - yOffset - 16) or 500
-            local dividerHeight = math.max(maxSize, visibleHeight)
-            
-            if maxSize > 0 then
-                Divider.Size = UDim2.new(0, 2, 0, dividerHeight)
-                Divider.Visible = true
-            else
-                Divider.Visible = false
-            end
+            local yOffset = 16
+            local bottomPadding = 24
+
+            LeftCol.Size = UDim2.new(1, -24, 0, leftSize)
+            RightCol.Size = UDim2.new(1, -24, 0, rightSize)
+
+            LeftScroll.CanvasSize = UDim2.new(
+                0,
+                0,
+                0,
+                leftSize + yOffset + bottomPadding
+            )
+            RightScroll.CanvasSize = UDim2.new(
+                0,
+                0,
+                0,
+                rightSize + yOffset + bottomPadding
+            )
+
+            Divider.Visible = leftSize > 0 or rightSize > 0
         end
+
         LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvas)
         RightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvas)
-        Page:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(UpdateCanvas)
+        LeftScroll:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(UpdateCanvas)
+        RightScroll:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(UpdateCanvas)
 
         TabBtn.MouseButton1Click:Connect(function()
             WindowObj.ActiveTab = tabName
