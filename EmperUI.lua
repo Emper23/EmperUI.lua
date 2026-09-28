@@ -1574,37 +1574,31 @@ function EmperUI:CreateWindow(options)
     MobileIcon.Parent = ScreenGui
     WindowObj:ApplyTheme(MobileIcon, "BackgroundColor3", "Background")
     MobileIcon.BackgroundTransparency = 0.05
-    MobileIcon.Position = UDim2.new(0.5, -75, 0, 20)
-    MobileIcon.Size = UDim2.new(0, 150, 0, 48)
+    MobileIcon.Position = UDim2.new(0.5, -80, 0, 20)
+    MobileIcon.Size = UDim2.new(0, 160, 0, 44)
     MobileIcon.Visible = false
     MobileIcon.ZIndex = 100
     MobileIcon.AutoButtonColor = false
     MobileIcon.ClipsDescendants = false
 
     local MobileIconCorner = Instance.new("UICorner")
-    MobileIconCorner.CornerRadius = UDim.new(1, 0)
+    MobileIconCorner.CornerRadius = UDim.new(0, 10)
     MobileIconCorner.Parent = MobileIcon
 
     local MobileIconStroke = Instance.new("UIStroke")
-    WindowObj:ApplyTheme(MobileIconStroke, "Color", "Accent")
-    MobileIconStroke.Thickness = 1.5
-    MobileIconStroke.Transparency = 0.05
+    WindowObj:ApplyTheme(MobileIconStroke, "Color", "Border")
+    MobileIconStroke.Thickness = 1
+    MobileIconStroke.Transparency = 0.1
+    MobileIconStroke.LineJoinMode = Enum.LineJoinMode.Round
     MobileIconStroke.Parent = MobileIcon
-    local MobileIconGradient = Instance.new("UIGradient")
-    MobileIconGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 240, 210)),
-        ColorSequenceKeypoint.new(0.52, Color3.fromRGB(80, 230, 180)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(245, 35, 220)),
-    })
-    MobileIconGradient.Parent = MobileIconStroke
 
     local MobileShadow = Instance.new("ImageLabel")
     MobileShadow.Parent = MobileIcon
     MobileShadow.BackgroundTransparency = 1
-    MobileShadow.Position = UDim2.new(0, -2, 0, -2)
-    MobileShadow.Size = UDim2.new(1, 4, 1, 4)
+    MobileShadow.Position = UDim2.new(0, -4, 0, -4)
+    MobileShadow.Size = UDim2.new(1, 8, 1, 8)
     MobileShadow.Image = "rbxassetid://1316045217"
-    MobileShadow.ImageTransparency = 0.94
+    MobileShadow.ImageTransparency = 0.97
     MobileShadow.ZIndex = 99
 
     local MobileStatus = Instance.new("Frame")
@@ -1683,7 +1677,18 @@ function EmperUI:CreateWindow(options)
     function WindowObj:SetMinimizedButtonStyle(styleOptions)
         styleOptions = type(styleOptions) == "table" and styleOptions or {}
         if styleOptions.Width or styleOptions.Height then
-            MobileIcon.Size = UDim2.new(0, tonumber(styleOptions.Width) or 86, 0, tonumber(styleOptions.Height) or 42)
+            MobileIcon.Size = UDim2.new(
+                0,
+                tonumber(styleOptions.Width) or 160,
+                0,
+                tonumber(styleOptions.Height) or 44
+            )
+        end
+        if styleOptions.CornerRadius ~= nil then
+            MobileIconCorner.CornerRadius = UDim.new(
+                0,
+                math.clamp(tonumber(styleOptions.CornerRadius) or 10, 0, 20)
+            )
         end
         if styleOptions.BackgroundTransparency then MobileIcon.BackgroundTransparency = math.clamp(tonumber(styleOptions.BackgroundTransparency) or 0.08, 0, 1) end
         if styleOptions.Text then self:SetMinimizedButtonText(styleOptions.Text) end
@@ -1707,21 +1712,59 @@ function EmperUI:CreateWindow(options)
     MakeDraggable(MobileIcon, MobileIcon, WindowObj)
 
     MobileIcon.MouseEnter:Connect(function()
-        WindowObj:Tween(MobileIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0, Size = UDim2.new(0, 154, 0, 50)})
-        WindowObj:Tween(MobileIconStroke, TweenInfo.new(0.18), {Thickness = 2})
+        WindowObj:Tween(
+            MobileIcon,
+            TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundTransparency = 0}
+        )
+        WindowObj:Tween(
+            MobileIconStroke,
+            TweenInfo.new(0.16),
+            {
+                Color = Theme.Accent,
+                Transparency = 0,
+            }
+        )
     end)
+
     MobileIcon.MouseLeave:Connect(function()
-        WindowObj:Tween(MobileIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 0.05, Size = UDim2.new(0, 150, 0, 48)})
-        WindowObj:Tween(MobileIconStroke, TweenInfo.new(0.18), {Thickness = 1.5})
+        WindowObj:Tween(
+            MobileIcon,
+            TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {BackgroundTransparency = 0.05}
+        )
+        WindowObj:Tween(
+            MobileIconStroke,
+            TweenInfo.new(0.16),
+            {
+                Color = Theme.Border,
+                Transparency = 0.1,
+            }
+        )
     end)
+
     MobileIcon.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or (WindowObj:GetTouchMode() and input.UserInputType == Enum.UserInputType.Touch) then
-            WindowObj:Tween(MobileIcon, TweenInfo.new(0.08), {Size = UDim2.new(0, 146, 0, 46)})
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or (WindowObj:GetTouchMode()
+                and input.UserInputType == Enum.UserInputType.Touch)
+        then
+            WindowObj:Tween(
+                MobileIcon,
+                TweenInfo.new(0.08),
+                {BackgroundTransparency = 0.1}
+            )
         end
     end)
+
     MobileIcon.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            WindowObj:Tween(MobileIcon, TweenInfo.new(0.14), {Size = UDim2.new(0, 150, 0, 48)})
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch
+        then
+            WindowObj:Tween(
+                MobileIcon,
+                TweenInfo.new(0.12),
+                {BackgroundTransparency = 0.05}
+            )
         end
     end)
 
