@@ -99,6 +99,36 @@ EmperUI.FontPresets = {
         Bold = Enum.Font.SourceSansBold,
         Mono = Enum.Font.RobotoMono,
     },
+    Arcade = {
+        Default = Enum.Font.Arcade,
+        Medium = Enum.Font.Arcade,
+        Bold = Enum.Font.Arcade,
+        Mono = Enum.Font.Code,
+    },
+    Cartoon = {
+        Default = Enum.Font.Cartoon,
+        Medium = Enum.Font.Cartoon,
+        Bold = Enum.Font.FredokaOne,
+        Mono = Enum.Font.Code,
+    },
+    SciFi = {
+        Default = Enum.Font.SciFi,
+        Medium = Enum.Font.SciFi,
+        Bold = Enum.Font.SciFi,
+        Mono = Enum.Font.Code,
+    },
+    Fantasy = {
+        Default = Enum.Font.Fantasy,
+        Medium = Enum.Font.Fantasy,
+        Bold = Enum.Font.Antique,
+        Mono = Enum.Font.Code,
+    },
+    Code = {
+        Default = Enum.Font.Code,
+        Medium = Enum.Font.Code,
+        Bold = Enum.Font.Code,
+        Mono = Enum.Font.Code,
+    },
 }
 
 EmperUI.FontPreset = "Builder"
@@ -6946,7 +6976,7 @@ function EmperUI:CreateWindow(options)
 
         ThemeSection:Dropdown({
             Title = "Font Preset",
-            Desc = "Change fonts across the entire UI instantly",
+            Desc = "Switch the entire UI between clearly different font styles",
             Values = fontPresetNames,
             Value = EmperUI:GetFontPreset(),
             Callback = function(val)
