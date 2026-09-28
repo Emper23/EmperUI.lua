@@ -1769,21 +1769,224 @@ function EmperUI:CreateWindow(options)
     end)
 
     local isMinimized = false
-    
+    local dustTransitionBusy = false
+
+    local DustLayer = Instance.new("Frame")
+    DustLayer.Name = "DustTransitionLayer"
+    DustLayer.Parent = ScreenGui
+    DustLayer.BackgroundTransparency = 1
+    DustLayer.BorderSizePixel = 0
+    DustLayer.Position = UDim2.fromOffset(0, 0)
+    DustLayer.Size = UDim2.new(1, 0, 1, 0)
+    DustLayer.ZIndex = 500
+    DustLayer.ClipsDescendants = false
+
+    local function randomPointInRect(position, size)
+        local x = position.X + math.random() * math.max(size.X, 1)
+        local y = position.Y + math.random() * math.max(size.Y, 1)
+        return Vector2.new(x, y)
+    end
+
+    local function spawnDustParticle(fromPoint, toPoint, delayTime, duration)
+        local particle = Instance.new("Frame")
+        particle.Name = "Dust"
+        particle.Parent = DustLayer
+        particle.BorderSizePixel = 0
+        particle.AnchorPoint = Vector2.new(0.5, 0.5)
+        particle.Position = UDim2.fromOffset(fromPoint.X, fromPoint.Y)
+
+        local width = math.random(2, 5)
+        local height = math.random(2, 5)
+        particle.Size = UDim2.fromOffset(width, height)
+        particle.Rotation = math.random(-35, 35)
+        particle.ZIndex = 501
+        particle.BackgroundTransparency = math.random(0, 18) / 100
+
+        local palette = {
+            Theme.Accent,
+            Theme.Text,
+            Theme.TextMuted,
+        }
+        particle.BackgroundColor3 = palette[math.random(1, #palette)]
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = particle
+
+        task.delay(delayTime, function()
+            if not particle.Parent then
+                return
+            end
+
+            local tween = TweenService:Create(
+                particle,
+                TweenInfo.new(
+                    duration,
+                    Enum.EasingStyle.Quart,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Position = UDim2.fromOffset(toPoint.X, toPoint.Y),
+                    Size = UDim2.fromOffset(
+                        math.max(1, width - 2),
+                        math.max(1, height - 2)
+                    ),
+                    Rotation = particle.Rotation + math.random(-140, 140),
+                    BackgroundTransparency = 1,
+                }
+            )
+
+            tween:Play()
+            tween.Completed:Connect(function()
+                if particle.Parent then
+                    particle:Destroy()
+                end
+            end)
+        end)
+    end
+
+    local function emitDust(fromPosition, fromSize, toPosition, toSize, amount)
+        amount = amount or 28
+
+        for index = 1, amount do
+            local fromPoint = randomPointInRect(fromPosition, fromSize)
+            local toPoint = randomPointInRect(toPosition, toSize)
+
+            local spread = Vector2.new(
+                math.random(-18, 18),
+                math.random(-12, 12)
+            )
+
+            spawnDustParticle(
+                fromPoint,
+                toPoint + spread,
+                (index - 1) * 0.006,
+                0.28 + math.random() * 0.18
+            )
+        end
+    end
+
+    local function playOpenDustTransition()
+        if dustTransitionBusy or not isMinimized then
+            return
+        end
+
+        dustTransitionBusy = true
+
+        local mobilePosition = MobileIcon.AbsolutePosition
+        local mobileSize = MobileIcon.AbsoluteSize
+        local mainPosition = MainFrame.AbsolutePosition
+        local mainSize = MainFrame.AbsoluteSize
+        local finalScale = MainScale.Scale
+
+        emitDust(
+            mobilePosition,
+            mobileSize,
+            mainPosition,
+            mainSize,
+            32
+        )
+
+        WindowObj:Tween(
+            MobileIcon,
+            TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.In),
+            { BackgroundTransparency = 1 }
+        )
+
+        task.delay(0.12, function()
+            MobileIcon.Visible = false
+            MobileIcon.BackgroundTransparency = 0.05
+
+            MainScale.Scale = finalScale * 0.92
+            MainFrame.Visible = true
+
+            TweenService:Create(
+                MainScale,
+                TweenInfo.new(
+                    0.28,
+                    Enum.EasingStyle.Quart,
+                    Enum.EasingDirection.Out
+                ),
+                { Scale = finalScale }
+            ):Play()
+
+            task.delay(0.08, function()
+                DropShadow.Visible = true
+            end)
+        end)
+
+        task.delay(0.46, function()
+            isMinimized = false
+            minimizedButtonVisible = false
+            dustTransitionBusy = false
+        end)
+    end
+
+    local function playMinimizeDustTransition()
+        if dustTransitionBusy or isMinimized then
+            return
+        end
+
+        dustTransitionBusy = true
+
+        local mainPosition = MainFrame.AbsolutePosition
+        local mainSize = MainFrame.AbsoluteSize
+        local mobilePosition = MobileIcon.AbsolutePosition
+        local mobileSize = MobileIcon.AbsoluteSize
+        local finalScale = MainScale.Scale
+
+        emitDust(
+            mainPosition,
+            mainSize,
+            mobilePosition,
+            mobileSize,
+            28
+        )
+
+        TweenService:Create(
+            MainScale,
+            TweenInfo.new(
+                0.2,
+                Enum.EasingStyle.Quart,
+                Enum.EasingDirection.In
+            ),
+            { Scale = finalScale * 0.95 }
+        ):Play()
+
+        task.delay(0.18, function()
+            MainFrame.Visible = false
+            DropShadow.Visible = false
+            MainScale.Scale = finalScale
+        end)
+
+        task.delay(0.32, function()
+            isMinimized = true
+            minimizedButtonVisible = true
+            MobileIcon.BackgroundTransparency = 1
+            MobileIcon.Visible = true
+
+            WindowObj:Tween(
+                MobileIcon,
+                TweenInfo.new(
+                    0.18,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+                { BackgroundTransparency = 0.05 }
+            )
+
+            task.delay(0.18, function()
+                dustTransitionBusy = false
+            end)
+        end)
+    end
+
     MobileIcon.MouseButton1Click:Connect(function()
-        isMinimized = false
-        minimizedButtonVisible = false
-        MobileIcon.Visible = false
-        MainFrame.Visible = true
-        DropShadow.Visible = true
+        playOpenDustTransition()
     end)
 
     CreateControlButton("rbxassetid://10734896206", Theme.Text, function()
-        isMinimized = true
-        MainFrame.Visible = false
-        DropShadow.Visible = false
-        minimizedButtonVisible = true
-        MobileIcon.Visible = true
+        playMinimizeDustTransition()
     end)
     local isMaximized = false
     local preMaximizeScale = 1
