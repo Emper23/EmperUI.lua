@@ -856,7 +856,7 @@ function EmperUI:CreateWindow(options)
         MotionSpeed = math.max(0.25, tonumber(options.MotionSpeed) or 1),
         TouchMode = options.TouchMode ~= false,
         TouchPadding = math.clamp(tonumber(options.TouchPadding) or 6, 0, 16),
-        ControlScale = math.clamp(tonumber(options.ControlScale) or 1, 0.85, 1.25),
+        ControlScale = math.clamp(tonumber(options.ControlScale) or 1.14, 0.9, 1.35),
         ControlRadius = math.clamp(tonumber(options.ControlRadius) or 6, 0, 16),
         ControlSpacing = math.clamp(tonumber(options.ControlSpacing) or 10, 2, 20),
         AutoSettingsThemeStudio = options.AutoSettingsThemeStudio ~= false,
@@ -910,12 +910,12 @@ function EmperUI:CreateWindow(options)
     end
 
     function WindowObj:SetControlScale(value)
-        self.ControlScale = math.clamp(tonumber(value) or 1, 0.85, 1.25)
+        self.ControlScale = math.clamp(tonumber(value) or 1.14, 0.9, 1.35)
         return self.ControlScale
     end
 
     function WindowObj:GetControlScale()
-        return self.ControlScale or 1
+        return self.ControlScale or 1.14
     end
 
     function WindowObj:SetControlRadius(value)
@@ -937,7 +937,7 @@ function EmperUI:CreateWindow(options)
     end
 
     WindowObj.ControlPresets = {
-        Default = {Scale = 1, Radius = 6, Spacing = 10, Theme = "Default"},
+        Default = {Scale = 1.14, Radius = 7, Spacing = 12, Theme = "Default"},
         Compact = {Scale = 0.9, Radius = 4, Spacing = 6, Theme = "Midnight"},
         Glass = {Scale = 1, Radius = 10, Spacing = 10, Theme = "Ocean"},
         Mobile = {Scale = 1.12, Radius = 9, Spacing = 12, Theme = "Default"},
@@ -4229,11 +4229,11 @@ function EmperUI:CreateWindow(options)
         TabBtn.Parent = TabContainer
         WindowObj:ApplyTheme(TabBtn, "BackgroundColor3", "ElementBg")
         TabBtn.BackgroundTransparency = 1
-        TabBtn.Size = UDim2.new(1, 0, 0, 36)
+        TabBtn.Size = UDim2.new(1, 0, 0, 40)
         SetFont(TabBtn, "Medium")
         TabBtn.Text = actualIcon and ("            " .. tabName) or ("       " .. tabName)
         WindowObj:ApplyTheme(TabBtn, "TextColor3", "TextMuted")
-        TabBtn.TextSize = 13
+        TabBtn.TextSize = 14
         TabBtn.TextXAlignment = Enum.TextXAlignment.Left
         TabBtn.AutoButtonColor = false
 
@@ -4630,7 +4630,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(TitleLabel, "Medium")
                 TitleLabel.Text = "    " .. btnText
                 WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
-                TitleLabel.TextSize = 15
+                TitleLabel.TextSize = 16
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
                 
                 local Hitbox = Instance.new("TextButton")
@@ -4657,7 +4657,7 @@ function EmperUI:CreateWindow(options)
                     SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
-                    DescLabel.TextSize = 13
+                    DescLabel.TextSize = 14
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -4781,7 +4781,7 @@ function EmperUI:CreateWindow(options)
                 end
                 
                 local Toggled = defaultState or false
-                local baseHeight = descText and 56 or 42
+                local baseHeight = (descText and 56 or 42) * WindowObj:GetControlScale()
                 
                 local ToggleFrame = Instance.new("Frame")
                 ToggleFrame.Parent = ParentCol
@@ -4807,7 +4807,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(Label, "Medium")
                 Label.Text = toggleText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
-                Label.TextSize = 15
+                Label.TextSize = 16
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 
                 if descText then
@@ -4819,7 +4819,7 @@ function EmperUI:CreateWindow(options)
                     SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
-                    DescLabel.TextSize = 13
+                    DescLabel.TextSize = 14
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -4926,7 +4926,7 @@ function EmperUI:CreateWindow(options)
                 end
                 
                 local Value = default or min
-                local baseHeight = descText and 66 or 52
+                local baseHeight = (descText and 66 or 52) * WindowObj:GetControlScale()
                 
                 local SliderFrame = Instance.new("Frame")
                 SliderFrame.Parent = ParentCol
@@ -4952,7 +4952,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(Label, "Medium")
                 Label.Text = sliderText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
-                Label.TextSize = 15
+                Label.TextSize = 16
                 Label.TextXAlignment = Enum.TextXAlignment.Left
 
                 local ValLabel = Instance.new("TextLabel")
@@ -4982,7 +4982,7 @@ function EmperUI:CreateWindow(options)
                     SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
-                    DescLabel.TextSize = 13
+                    DescLabel.TextSize = 14
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -5126,7 +5126,7 @@ function EmperUI:CreateWindow(options)
 
                 maxDropdownHeight = math.clamp(maxDropdownHeight, 90, 320)
                 
-                local baseHeight = descText and 56 or 42
+                local baseHeight = (descText and 56 or 42) * WindowObj:GetControlScale()
                 
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
@@ -5149,7 +5149,7 @@ function EmperUI:CreateWindow(options)
                 local HeaderBtn = Instance.new("TextButton")
                 HeaderBtn.Parent = DropdownFrame
                 HeaderBtn.BackgroundTransparency = 1
-                HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
+                HeaderBtn.Size = UDim2.new(1, 0, 0, 48)
                 SetFont(HeaderBtn, "Medium")
                 HeaderBtn.Text = ""
                 HeaderBtn.ZIndex = 2
@@ -5162,7 +5162,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(Label, "Medium")
                 Label.Text = dropdownText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
-                Label.TextSize = 15
+                Label.TextSize = 16
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
                 Label.ZIndex = 2
@@ -5175,7 +5175,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(SelLabel, "Bold")
                 SelLabel.Text = tostring(CurrentOption)
                 WindowObj:ApplyTheme(SelLabel, "TextColor3", "Accent")
-                SelLabel.TextSize = 15
+                SelLabel.TextSize = 16
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 SelLabel.ZIndex = 2
@@ -5254,11 +5254,11 @@ function EmperUI:CreateWindow(options)
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Parent = OptionContainer
                     WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
-                    OptBtn.Size = UDim2.new(1, 0, 0, 30)
+                    OptBtn.Size = UDim2.new(1, 0, 0, 34)
                     SetFont(OptBtn, "Medium")
                     OptBtn.Text = "        " .. tostring(optName)
                     OptBtn.TextColor3 = (CurrentOption == optName) and Theme.Accent or Theme.TextMuted
-                    OptBtn.TextSize = 12
+                    OptBtn.TextSize = 13
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.AutoButtonColor = false
                     OptBtn.ZIndex = 3
@@ -5397,7 +5397,7 @@ function EmperUI:CreateWindow(options)
                 local DropdownFrame = Instance.new("Frame")
                 DropdownFrame.Parent = ParentCol
                 WindowObj:ApplyTheme(DropdownFrame, "BackgroundColor3", "ElementBg")
-                DropdownFrame.Size = UDim2.new(1, 0, 0, 42)
+                DropdownFrame.Size = UDim2.new(1, 0, 0, 48)
                 DropdownFrame.BorderSizePixel = 0
                 DropdownFrame.ClipsDescendants = true
                 DropdownFrame.ZIndex = 1
@@ -5415,7 +5415,7 @@ function EmperUI:CreateWindow(options)
                 local HeaderBtn = Instance.new("TextButton")
                 HeaderBtn.Parent = DropdownFrame
                 HeaderBtn.BackgroundTransparency = 1
-                HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
+                HeaderBtn.Size = UDim2.new(1, 0, 0, 48)
                 SetFont(HeaderBtn, "Medium")
                 HeaderBtn.Text = ""
                 HeaderBtn.ZIndex = 2
@@ -5428,7 +5428,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(Label, "Medium")
                 Label.Text = dropdownText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
-                Label.TextSize = 15
+                Label.TextSize = 16
                 Label.TextXAlignment = Enum.TextXAlignment.Left
                 Label.TextTruncate = Enum.TextTruncate.AtEnd
                 Label.ZIndex = 2
@@ -5451,7 +5451,7 @@ function EmperUI:CreateWindow(options)
                 end
                 UpdateSelLabel()
                 
-                SelLabel.TextSize = 15
+                SelLabel.TextSize = 16
                 SelLabel.TextXAlignment = Enum.TextXAlignment.Right
                 SelLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 SelLabel.ZIndex = 2
@@ -5532,11 +5532,11 @@ function EmperUI:CreateWindow(options)
                     local OptBtn = Instance.new("TextButton")
                     OptBtn.Parent = OptionContainer
                     WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
-                    OptBtn.Size = UDim2.new(1, 0, 0, 30)
+                    OptBtn.Size = UDim2.new(1, 0, 0, 34)
                     SetFont(OptBtn, "Medium")
                     OptBtn.Text = "        " .. tostring(optName)
                     OptBtn.TextColor3 = isOptSelected and Theme.Accent or Theme.TextMuted
-                    OptBtn.TextSize = 12
+                    OptBtn.TextSize = 13
                     OptBtn.TextXAlignment = Enum.TextXAlignment.Left
                     OptBtn.AutoButtonColor = false
                     OptBtn.ZIndex = 3
@@ -5671,7 +5671,7 @@ function EmperUI:CreateWindow(options)
                     descText = arg1.Desc or arg1.Description
                 end
                 
-                local baseHeight = descText and 56 or 42
+                local baseHeight = (descText and 56 or 42) * WindowObj:GetControlScale()
                 
                 local TbFrame = Instance.new("Frame")
                 TbFrame.Parent = ParentCol
@@ -5698,7 +5698,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(TbLabel, "Medium")
                 TbLabel.Text = tbText
                 WindowObj:ApplyTheme(TbLabel, "TextColor3", "Text")
-                TbLabel.TextSize = 15
+                TbLabel.TextSize = 16
                 TbLabel.TextXAlignment = Enum.TextXAlignment.Left
  
                 if descText then
@@ -5710,7 +5710,7 @@ function EmperUI:CreateWindow(options)
                     SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
-                    DescLabel.TextSize = 13
+                    DescLabel.TextSize = 14
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -5792,7 +5792,7 @@ function EmperUI:CreateWindow(options)
                     descText = arg1.Desc or arg1.Description
                 end
                 
-                local baseHeight = descText and 56 or 42
+                local baseHeight = (descText and 56 or 42) * WindowObj:GetControlScale()
                 
                 local KbFrame = Instance.new("Frame")
                 KbFrame.Parent = ParentCol
@@ -5818,7 +5818,7 @@ function EmperUI:CreateWindow(options)
                 SetFont(KbLabel, "Medium")
                 KbLabel.Text = kbText
                 WindowObj:ApplyTheme(KbLabel, "TextColor3", "Text")
-                KbLabel.TextSize = 15
+                KbLabel.TextSize = 16
                 KbLabel.TextXAlignment = Enum.TextXAlignment.Left
 
                 if descText then
@@ -5830,7 +5830,7 @@ function EmperUI:CreateWindow(options)
                     SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
-                    DescLabel.TextSize = 13
+                    DescLabel.TextSize = 14
                     DescLabel.TextXAlignment = Enum.TextXAlignment.Left
                     DescLabel.TextTruncate = Enum.TextTruncate.AtEnd
                 end
@@ -6009,7 +6009,7 @@ function EmperUI:CreateWindow(options)
                 local CpFrame = Instance.new("Frame")
                 CpFrame.Parent = ParentCol
                 WindowObj:ApplyTheme(CpFrame, "BackgroundColor3", "ElementBg")
-                CpFrame.Size = UDim2.new(1, 0, 0, 42)
+                CpFrame.Size = UDim2.new(1, 0, 0, 48)
                 CpFrame.BorderSizePixel = 0
                 CpFrame.ClipsDescendants = true
                 Section:_RegisterControl(CpFrame, arg1, cpText, "Colorpicker")
@@ -6026,7 +6026,7 @@ function EmperUI:CreateWindow(options)
                 local HeaderBtn = Instance.new("TextButton")
                 HeaderBtn.Parent = CpFrame
                 HeaderBtn.BackgroundTransparency = 1
-                HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
+                HeaderBtn.Size = UDim2.new(1, 0, 0, 48)
                 HeaderBtn.Text = ""
 
                 local CpLabel = Instance.new("TextLabel")
