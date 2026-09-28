@@ -78,6 +78,95 @@ if type(gethui) == "function" then
 end
 
 
+
+-- [ Font Theme System ]
+EmperUI.FontPresets = {
+    Builder = {
+        Default = Enum.Font.BuilderSans,
+        Medium = Enum.Font.BuilderSansMedium,
+        Bold = Enum.Font.BuilderSansBold,
+        Mono = Enum.Font.RobotoMono,
+    },
+    Gotham = {
+        Default = Enum.Font.Gotham,
+        Medium = Enum.Font.GothamMedium,
+        Bold = Enum.Font.GothamBold,
+        Mono = Enum.Font.RobotoMono,
+    },
+    Classic = {
+        Default = Enum.Font.SourceSans,
+        Medium = Enum.Font.SourceSansSemibold,
+        Bold = Enum.Font.SourceSansBold,
+        Mono = Enum.Font.RobotoMono,
+    },
+}
+
+EmperUI.FontPreset = "Builder"
+
+if type(Environment.EmperUI_FontPreset) == "string"
+    and EmperUI.FontPresets[Environment.EmperUI_FontPreset]
+then
+    EmperUI.FontPreset = Environment.EmperUI_FontPreset
+end
+
+local FontRegistry = setmetatable({}, { __mode = "k" })
+
+local function GetActiveFontSet()
+    return EmperUI.FontPresets[EmperUI.FontPreset]
+        or EmperUI.FontPresets.Builder
+end
+
+local function FontFor(role)
+    local fonts = GetActiveFontSet()
+    return fonts[role or "Default"]
+        or fonts.Default
+        or Enum.Font.BuilderSans
+end
+
+local function SetFont(object, role)
+    if not object then
+        return object
+    end
+
+    role = role or "Default"
+    FontRegistry[object] = role
+
+    pcall(function()
+        object.Font = FontFor(role)
+    end)
+
+    return object
+end
+
+function EmperUI:SetFontPreset(name)
+    name = tostring(name or "")
+
+    if not self.FontPresets[name] then
+        return false
+    end
+
+    self.FontPreset = name
+    Environment.EmperUI_FontPreset = name
+
+    for object, role in pairs(FontRegistry) do
+        if object and object.Parent then
+            pcall(function()
+                object.Font = FontFor(role)
+            end)
+        end
+    end
+
+    return true
+end
+
+function EmperUI:GetFontPreset()
+    return self.FontPreset
+end
+
+function EmperUI:GetFonts()
+    return GetActiveFontSet()
+end
+
 EmperUI.Themes = {
     Default = {
         Background = Color3.fromRGB(15, 15, 20),
@@ -312,7 +401,7 @@ local function RenderNotification(opts)
     IconLabel.Parent = IconCircle
     IconLabel.BackgroundTransparency = 1
     IconLabel.Size = UDim2.new(1, 0, 1, 0)
-    IconLabel.Font = Enum.Font.GothamBold
+    SetFont(IconLabel, "Bold")
     IconLabel.TextSize = 15
     IconLabel.TextColor3 = accent
     IconLabel.Text = icon
@@ -325,7 +414,7 @@ local function RenderNotification(opts)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Position = UDim2.new(0, 56, 0, 13)
     TitleLabel.Size = UDim2.new(1, -78, 0, 20)
-    TitleLabel.Font = Enum.Font.GothamBold
+    SetFont(TitleLabel, "Bold")
     TitleLabel.TextSize = 14
     TitleLabel.TextColor3 = Color3.fromRGB(242, 244, 252)
     TitleLabel.Text = title
@@ -338,7 +427,7 @@ local function RenderNotification(opts)
     MsgLabel.BackgroundTransparency = 1
     MsgLabel.Position = UDim2.new(0, 56, 0, 36)
     MsgLabel.Size = UDim2.new(1, -70, 0, 32)
-    MsgLabel.Font = Enum.Font.Gotham
+    SetFont(MsgLabel, "Default")
     MsgLabel.TextSize = 12
     MsgLabel.TextColor3 = Color3.fromRGB(148, 153, 172)
     MsgLabel.Text = message
@@ -355,7 +444,7 @@ local function RenderNotification(opts)
     CloseButton.Size = UDim2.new(0, 20, 0, 20)
     CloseButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
     CloseButton.BackgroundTransparency = 0.92
-    CloseButton.Font = Enum.Font.GothamBold
+    SetFont(CloseButton, "Bold")
     CloseButton.Text = "✕"
     CloseButton.TextColor3 = Color3.fromRGB(110, 114, 135)
     CloseButton.TextSize = 9
@@ -566,7 +655,7 @@ function EmperUI:CreateKeyGate(options)
     title.BackgroundTransparency = 1
     title.Position = UDim2.new(0, 28, 0, 24)
     title.Size = UDim2.new(1, -44, 0, 28)
-    title.Font = Enum.Font.GothamBold
+    SetFont(title, "Bold")
     title.Text = tostring(options.Title or "Access Key")
     title.TextColor3 = Color3.fromRGB(245, 245, 250)
     title.TextSize = 22
@@ -577,7 +666,7 @@ function EmperUI:CreateKeyGate(options)
     subtitle.BackgroundTransparency = 1
     subtitle.Position = UDim2.new(0, 28, 0, 60)
     subtitle.Size = UDim2.new(1, -44, 0, 22)
-    subtitle.Font = Enum.Font.Gotham
+    SetFont(subtitle, "Default")
     subtitle.Text = tostring(options.Subtitle or "Enter your access key to continue")
     subtitle.TextColor3 = Color3.fromRGB(145, 150, 165)
     subtitle.TextSize = 12
@@ -589,7 +678,7 @@ function EmperUI:CreateKeyGate(options)
     input.Size = UDim2.new(1, -56, 0, 42)
     input.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
     input.BorderSizePixel = 0
-    input.Font = Enum.Font.Gotham
+    SetFont(input, "Default")
     input.PlaceholderText = "EMP-FREE-2026"
     input.Text = ""
     input.TextColor3 = Color3.fromRGB(240, 242, 248)
@@ -605,7 +694,7 @@ function EmperUI:CreateKeyGate(options)
     status.BackgroundTransparency = 1
     status.Position = UDim2.new(0, 28, 1, -42)
     status.Size = UDim2.new(0.55, 0, 0, 18)
-    status.Font = Enum.Font.Gotham
+    SetFont(status, "Default")
     status.Text = ""
     status.TextColor3 = Color3.fromRGB(255, 90, 100)
     status.TextSize = 11
@@ -618,7 +707,7 @@ function EmperUI:CreateKeyGate(options)
     unlock.BackgroundColor3 = Color3.fromRGB(0, 200, 220)
     unlock.Text = "UNLOCK"
     unlock.TextColor3 = Color3.fromRGB(5, 8, 12)
-    unlock.Font = Enum.Font.GothamBold
+    SetFont(unlock, "Bold")
     unlock.TextSize = 12
     unlock.AutoButtonColor = false
     local unlockCorner = Instance.new("UICorner")
@@ -632,7 +721,7 @@ function EmperUI:CreateKeyGate(options)
     paste.BackgroundColor3 = Color3.fromRGB(35, 38, 50)
     paste.Text = "PASTE"
     paste.TextColor3 = Color3.fromRGB(220, 225, 235)
-    paste.Font = Enum.Font.GothamBold
+    SetFont(paste, "Bold")
     paste.TextSize = 9
     paste.AutoButtonColor = false
     local pasteCorner = Instance.new("UICorner")
@@ -1059,7 +1148,7 @@ function EmperUI:CreateWindow(options)
     TooltipLabel.BackgroundTransparency = 1
     TooltipLabel.Position = UDim2.new(0, 9, 0, 6)
     TooltipLabel.Size = UDim2.new(1, -18, 1, -12)
-    TooltipLabel.Font = Enum.Font.Gotham
+    SetFont(TooltipLabel, "Default")
     TooltipLabel.TextColor3 = Color3.fromRGB(225, 227, 238)
     TooltipLabel.TextSize = 11
     TooltipLabel.TextWrapped = true
@@ -1083,9 +1172,9 @@ function EmperUI:CreateWindow(options)
     local function ShowTooltip(text, position)
         if not WindowObj.Alive or not text or tostring(text) == "" then return end
         text = tostring(text)
-        local bounds = TextService:GetTextSize(text, 11, Enum.Font.Gotham, Vector2.new(250, 1000))
+        local bounds = TextService:GetTextSize(text, 11, FontFor("Default"), Vector2.new(250, 1000))
         local width = math.clamp(bounds.X + 18, 130, 268)
-        local wrappedBounds = TextService:GetTextSize(text, 11, Enum.Font.Gotham, Vector2.new(width - 18, 1000))
+        local wrappedBounds = TextService:GetTextSize(text, 11, FontFor("Default"), Vector2.new(width - 18, 1000))
         local height = math.clamp(wrappedBounds.Y + 12, 30, 120)
         TooltipFrame.Size = UDim2.fromOffset(width, height)
         TooltipLabel.Text = text
@@ -1366,7 +1455,7 @@ function EmperUI:CreateWindow(options)
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 16, 0, 0)
     Title.Size = UDim2.new(1, -200, 1, 0)
-    Title.Font = Enum.Font.GothamMedium
+    SetFont(Title, "Medium")
     Title.Text = WindowTitle
     WindowObj:ApplyTheme(Title, "TextColor3", "Text")
     Title.TextSize = 13
@@ -1377,7 +1466,7 @@ function EmperUI:CreateWindow(options)
     ClockLabel.BackgroundTransparency = 1
     ClockLabel.Position = UDim2.new(1, -220, 0, 0)
     ClockLabel.Size = UDim2.new(0, 100, 1, 0)
-    ClockLabel.Font = Enum.Font.Gotham
+    SetFont(ClockLabel, "Mono")
     WindowObj:ApplyTheme(ClockLabel, "TextColor3", "TextMuted")
     ClockLabel.TextSize = 12
     ClockLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -1545,7 +1634,7 @@ function EmperUI:CreateWindow(options)
     MobileGlyph.BackgroundTransparency = 1
     MobileGlyph.Position = UDim2.new(0, 13, 0.5, -9)
     MobileGlyph.Size = UDim2.new(0, 20, 0, 18)
-    MobileGlyph.Font = Enum.Font.GothamBold
+    SetFont(MobileGlyph, "Bold")
     MobileGlyph.Text = "✦"
     MobileGlyph.TextSize = 18
     MobileGlyph.TextXAlignment = Enum.TextXAlignment.Center
@@ -1581,7 +1670,7 @@ function EmperUI:CreateWindow(options)
     MobileLabel.BackgroundTransparency = 1
     MobileLabel.Position = UDim2.new(0, 34, 0, 0)
     MobileLabel.Size = UDim2.new(1, -44, 1, 0)
-    MobileLabel.Font = Enum.Font.GothamBold
+    SetFont(MobileLabel, "Bold")
     MobileLabel.Text = WindowTitle
     MobileLabel.TextSize = 14
     MobileLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -1854,7 +1943,7 @@ function EmperUI:CreateWindow(options)
     SearchBox.Position = UDim2.new(0, 28, 0, 0)
     SearchBox.Size = UDim2.new(1, -34, 1, 0)
     SearchBox.ClearTextOnFocus = false
-    SearchBox.Font = Enum.Font.Gotham
+    SetFont(SearchBox, "Default")
     SearchBox.PlaceholderText = "Search tabs..."
     SearchBox.Text = ""
     SearchBox.TextSize = 11
@@ -3654,7 +3743,7 @@ function EmperUI:CreateWindow(options)
         WindowObj:ApplyTheme(TabBtn, "BackgroundColor3", "ElementBg")
         TabBtn.BackgroundTransparency = 1
         TabBtn.Size = UDim2.new(1, 0, 0, 36)
-        TabBtn.Font = Enum.Font.GothamMedium
+        SetFont(TabBtn, "Medium")
         TabBtn.Text = actualIcon and ("            " .. tabName) or ("       " .. tabName)
         WindowObj:ApplyTheme(TabBtn, "TextColor3", "TextMuted")
         TabBtn.TextSize = 13
@@ -3885,7 +3974,7 @@ function EmperUI:CreateWindow(options)
                 HeaderTitle.BackgroundTransparency = 1
                 HeaderTitle.Position = UDim2.new(0, 12, 0, 0)
                 HeaderTitle.Size = UDim2.new(1, -42, 1, 0)
-                HeaderTitle.Font = Enum.Font.GothamBold
+                SetFont(HeaderTitle, "Bold")
                 HeaderTitle.Text = tostring(sectionTitle)
                 HeaderTitle.TextSize = 12
                 HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -3896,7 +3985,7 @@ function EmperUI:CreateWindow(options)
                 ArrowLabel.BackgroundTransparency = 1
                 ArrowLabel.Position = UDim2.new(1, -30, 0, 0)
                 ArrowLabel.Size = UDim2.new(0, 22, 1, 0)
-                ArrowLabel.Font = Enum.Font.GothamBold
+                SetFont(ArrowLabel, "Bold")
                 ArrowLabel.Text = collapsed and "+" or "−"
                 ArrowLabel.TextSize = 15
                 WindowObj:ApplyTheme(ArrowLabel, "TextColor3", "TextMuted")
@@ -4021,7 +4110,7 @@ function EmperUI:CreateWindow(options)
                 TitleLabel.BackgroundTransparency = 1
                 TitleLabel.Size = descText and UDim2.new(1, 0, 0, 24) or UDim2.new(1, 0, 1, 0)
                 TitleLabel.Position = descText and UDim2.new(0, 0, 0, 8) or UDim2.new(0, 0, 0, 0)
-                TitleLabel.Font = Enum.Font.GothamMedium
+                SetFont(TitleLabel, "Medium")
                 TitleLabel.Text = "    " .. btnText
                 WindowObj:ApplyTheme(TitleLabel, "TextColor3", "Text")
                 TitleLabel.TextSize = 15
@@ -4048,7 +4137,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.BackgroundTransparency = 1
                     DescLabel.Size = UDim2.new(1, -30, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
-                    DescLabel.Font = Enum.Font.Gotham
+                    SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
                     DescLabel.TextSize = 13
@@ -4198,7 +4287,7 @@ function EmperUI:CreateWindow(options)
                 Label.BackgroundTransparency = 1
                 Label.Size = descText and UDim2.new(1, -60, 0, 24) or UDim2.new(1, -60, 1, 0)
                 Label.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
-                Label.Font = Enum.Font.GothamMedium
+                SetFont(Label, "Medium")
                 Label.Text = toggleText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
                 Label.TextSize = 15
@@ -4210,7 +4299,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.BackgroundTransparency = 1
                     DescLabel.Size = UDim2.new(1, -60, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
-                    DescLabel.Font = Enum.Font.Gotham
+                    SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
                     DescLabel.TextSize = 13
@@ -4343,7 +4432,7 @@ function EmperUI:CreateWindow(options)
                 Label.BackgroundTransparency = 1
                 Label.Size = UDim2.new(1, -100, 0, 24)
                 Label.Position = UDim2.new(0, 16, 0, 4)
-                Label.Font = Enum.Font.GothamMedium
+                SetFont(Label, "Medium")
                 Label.Text = sliderText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
                 Label.TextSize = 15
@@ -4354,7 +4443,7 @@ function EmperUI:CreateWindow(options)
                 ValLabel.BackgroundTransparency = 1
                 ValLabel.Size = UDim2.new(0, 80, 0, 24)
                 ValLabel.Position = UDim2.new(1, -96, 0, 4)
-                ValLabel.Font = Enum.Font.GothamBold
+                SetFont(ValLabel, "Bold")
                 ValLabel.Text = tostring(Value)
                 WindowObj:ApplyTheme(ValLabel, "TextColor3", "Accent")
                 ValLabel.TextSize = 15
@@ -4373,7 +4462,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.BackgroundTransparency = 1
                     DescLabel.Size = UDim2.new(1, -100, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 22)
-                    DescLabel.Font = Enum.Font.Gotham
+                    SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
                     DescLabel.TextSize = 13
@@ -4544,7 +4633,7 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.Parent = DropdownFrame
                 HeaderBtn.BackgroundTransparency = 1
                 HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
-                HeaderBtn.Font = Enum.Font.GothamMedium
+                SetFont(HeaderBtn, "Medium")
                 HeaderBtn.Text = ""
                 HeaderBtn.ZIndex = 2
 
@@ -4553,7 +4642,7 @@ function EmperUI:CreateWindow(options)
                 Label.BackgroundTransparency = 1
                 Label.Size = UDim2.new(0.5, -16, 0, 42)
                 Label.Position = UDim2.new(0, 16, 0, 0)
-                Label.Font = Enum.Font.GothamMedium
+                SetFont(Label, "Medium")
                 Label.Text = dropdownText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
                 Label.TextSize = 15
@@ -4566,7 +4655,7 @@ function EmperUI:CreateWindow(options)
                 SelLabel.BackgroundTransparency = 1
                 SelLabel.Size = descText and UDim2.new(0.5, -40, 0, 24) or UDim2.new(0.5, -40, 0, 42)
                 SelLabel.Position = descText and UDim2.new(0.5, 8, 0, 8) or UDim2.new(0.5, 8, 0, 0)
-                SelLabel.Font = Enum.Font.GothamBold
+                SetFont(SelLabel, "Bold")
                 SelLabel.Text = tostring(CurrentOption)
                 WindowObj:ApplyTheme(SelLabel, "TextColor3", "Accent")
                 SelLabel.TextSize = 15
@@ -4649,7 +4738,7 @@ function EmperUI:CreateWindow(options)
                     OptBtn.Parent = OptionContainer
                     WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
                     OptBtn.Size = UDim2.new(1, 0, 0, 30)
-                    OptBtn.Font = Enum.Font.GothamMedium
+                    SetFont(OptBtn, "Medium")
                     OptBtn.Text = "        " .. tostring(optName)
                     OptBtn.TextColor3 = (CurrentOption == optName) and Theme.Accent or Theme.TextMuted
                     OptBtn.TextSize = 12
@@ -4810,7 +4899,7 @@ function EmperUI:CreateWindow(options)
                 HeaderBtn.Parent = DropdownFrame
                 HeaderBtn.BackgroundTransparency = 1
                 HeaderBtn.Size = UDim2.new(1, 0, 0, 42)
-                HeaderBtn.Font = Enum.Font.GothamMedium
+                SetFont(HeaderBtn, "Medium")
                 HeaderBtn.Text = ""
                 HeaderBtn.ZIndex = 2
 
@@ -4819,7 +4908,7 @@ function EmperUI:CreateWindow(options)
                 Label.BackgroundTransparency = 1
                 Label.Size = UDim2.new(0.5, -16, 0, 42)
                 Label.Position = UDim2.new(0, 16, 0, 0)
-                Label.Font = Enum.Font.GothamMedium
+                SetFont(Label, "Medium")
                 Label.Text = dropdownText
                 WindowObj:ApplyTheme(Label, "TextColor3", "Text")
                 Label.TextSize = 15
@@ -4832,7 +4921,7 @@ function EmperUI:CreateWindow(options)
                 SelLabel.BackgroundTransparency = 1
                 SelLabel.Size = UDim2.new(0.5, -40, 0, 42)
                 SelLabel.Position = UDim2.new(0.5, 8, 0, 0)
-                SelLabel.Font = Enum.Font.GothamBold
+                SetFont(SelLabel, "Bold")
                 
                 local function UpdateSelLabel()
                     if #CurrentOptions == 0 then
@@ -4927,7 +5016,7 @@ function EmperUI:CreateWindow(options)
                     OptBtn.Parent = OptionContainer
                     WindowObj:ApplyTheme(OptBtn, "BackgroundColor3", "ElementBg")
                     OptBtn.Size = UDim2.new(1, 0, 0, 30)
-                    OptBtn.Font = Enum.Font.GothamMedium
+                    SetFont(OptBtn, "Medium")
                     OptBtn.Text = "        " .. tostring(optName)
                     OptBtn.TextColor3 = isOptSelected and Theme.Accent or Theme.TextMuted
                     OptBtn.TextSize = 12
@@ -5089,7 +5178,7 @@ function EmperUI:CreateWindow(options)
                 TbLabel.Position = UDim2.new(0, 16, 0, 0)
                 TbLabel.Size = descText and UDim2.new(0.5, -16, 0, 24) or UDim2.new(0.5, -16, 1, 0)
                 TbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
-                TbLabel.Font = Enum.Font.GothamMedium
+                SetFont(TbLabel, "Medium")
                 TbLabel.Text = tbText
                 WindowObj:ApplyTheme(TbLabel, "TextColor3", "Text")
                 TbLabel.TextSize = 15
@@ -5101,7 +5190,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.BackgroundTransparency = 1
                     DescLabel.Size = UDim2.new(0.5, -16, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
-                    DescLabel.Font = Enum.Font.Gotham
+                    SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
                     DescLabel.TextSize = 13
@@ -5130,7 +5219,7 @@ function EmperUI:CreateWindow(options)
                 TextBox.Parent = TextBoxBg
                 TextBox.BackgroundTransparency = 1
                 TextBox.Size = UDim2.new(1, 0, 1, 0)
-                TextBox.Font = Enum.Font.Gotham
+                SetFont(TextBox, "Default")
                 TextBox.PlaceholderText = placeholder or ""
                 TextBox.Text = defaultValue
                 WindowObj:ApplyTheme(TextBox, "TextColor3", "Text")
@@ -5209,7 +5298,7 @@ function EmperUI:CreateWindow(options)
                 KbLabel.BackgroundTransparency = 1
                 KbLabel.Size = descText and UDim2.new(0.5, -16, 0, 24) or UDim2.new(0.5, -20, 1, 0)
                 KbLabel.Position = descText and UDim2.new(0, 16, 0, 8) or UDim2.new(0, 16, 0, 0)
-                KbLabel.Font = Enum.Font.GothamMedium
+                SetFont(KbLabel, "Medium")
                 KbLabel.Text = kbText
                 WindowObj:ApplyTheme(KbLabel, "TextColor3", "Text")
                 KbLabel.TextSize = 15
@@ -5221,7 +5310,7 @@ function EmperUI:CreateWindow(options)
                     DescLabel.BackgroundTransparency = 1
                     DescLabel.Size = UDim2.new(0.5, -16, 0, 16)
                     DescLabel.Position = UDim2.new(0, 16, 0, 30)
-                    DescLabel.Font = Enum.Font.Gotham
+                    SetFont(DescLabel, "Default")
                     DescLabel.Text = descText
                     WindowObj:ApplyTheme(DescLabel, "TextColor3", "TextMuted")
                     DescLabel.TextSize = 13
@@ -5250,7 +5339,7 @@ function EmperUI:CreateWindow(options)
                 BindBtn.Parent = BindBg
                 BindBtn.BackgroundTransparency = 1
                 BindBtn.Size = UDim2.new(1, 0, 1, 0)
-                BindBtn.Font = Enum.Font.GothamMedium
+                SetFont(BindBtn, "Medium")
                 BindBtn.Text = defaultKey.Name
                 WindowObj:ApplyTheme(BindBtn, "TextColor3", "TextMuted")
                 BindBtn.TextSize = 12
@@ -5355,7 +5444,7 @@ function EmperUI:CreateWindow(options)
                 Lbl.BackgroundTransparency = 1
                 Lbl.Size = UDim2.new(1, -20, 1, 0)
                 Lbl.Position = UDim2.new(0, 10, 0, 0)
-                Lbl.Font = Enum.Font.Gotham
+                SetFont(Lbl, "Default")
                 Lbl.Text = labelText
                 WindowObj:ApplyTheme(Lbl, "TextColor3", "TextMuted")
                 Lbl.TextSize = 15
@@ -5428,7 +5517,7 @@ function EmperUI:CreateWindow(options)
                 CpLabel.BackgroundTransparency = 1
                 CpLabel.Position = UDim2.new(0, 16, 0, 0)
                 CpLabel.Size = UDim2.new(0.5, -20, 0, 42)
-                CpLabel.Font = Enum.Font.GothamMedium
+                SetFont(CpLabel, "Medium")
                 CpLabel.Text = cpText
                 WindowObj:ApplyTheme(CpLabel, "TextColor3", "Text")
                 CpLabel.TextSize = 15
@@ -5481,7 +5570,7 @@ function EmperUI:CreateWindow(options)
                     Lbl.BackgroundTransparency = 1
                     Lbl.Position = UDim2.new(0, 16, 0, 0)
                     Lbl.Size = UDim2.new(0, 20, 1, 0)
-                    Lbl.Font = Enum.Font.GothamMedium
+                    SetFont(Lbl, "Medium")
                     Lbl.Text = name
                     WindowObj:ApplyTheme(Lbl, "TextColor3", "Text")
                     Lbl.TextSize = 12
@@ -5641,7 +5730,7 @@ function EmperUI:CreateWindow(options)
                 TitleLabel.BackgroundTransparency = 1
                 TitleLabel.Position = UDim2.new(0, 14, 0, 8)
                 TitleLabel.Size = UDim2.new(1, -28, 0, 18)
-                TitleLabel.Font = Enum.Font.GothamBold
+                SetFont(TitleLabel, "Bold")
                 TitleLabel.Text = tostring(titleText)
                 TitleLabel.TextSize = 13
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -5652,7 +5741,7 @@ function EmperUI:CreateWindow(options)
                 BodyLabel.BackgroundTransparency = 1
                 BodyLabel.Position = UDim2.new(0, 14, 0, 29)
                 BodyLabel.Size = UDim2.new(1, -28, 1, -37)
-                BodyLabel.Font = Enum.Font.Gotham
+                SetFont(BodyLabel, "Default")
                 BodyLabel.Text = tostring(bodyText)
                 BodyLabel.TextSize = 11
                 BodyLabel.TextWrapped = true
@@ -5698,7 +5787,7 @@ function EmperUI:CreateWindow(options)
                 TitleLabel.BackgroundTransparency = 1
                 TitleLabel.Position = UDim2.new(0, 14, 0, 5)
                 TitleLabel.Size = UDim2.new(0.65, -14, 0, 22)
-                TitleLabel.Font = Enum.Font.GothamMedium
+                SetFont(TitleLabel, "Medium")
                 TitleLabel.Text = tostring(titleText)
                 TitleLabel.TextSize = 13
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -5709,7 +5798,7 @@ function EmperUI:CreateWindow(options)
                 ValueLabel.BackgroundTransparency = 1
                 ValueLabel.Position = UDim2.new(0.65, 0, 0, 5)
                 ValueLabel.Size = UDim2.new(0.35, -14, 0, 22)
-                ValueLabel.Font = Enum.Font.Gotham
+                SetFont(ValueLabel, "Default")
                 ValueLabel.TextSize = 11
                 ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
                 WindowObj:ApplyTheme(ValueLabel, "TextColor3", "TextMuted")
@@ -5781,7 +5870,7 @@ function EmperUI:CreateWindow(options)
                 TitleLabel.BackgroundTransparency = 1
                 TitleLabel.Position = UDim2.new(0, 14, 0, 0)
                 TitleLabel.Size = UDim2.new(0.58, -14, 1, 0)
-                TitleLabel.Font = Enum.Font.GothamMedium
+                SetFont(TitleLabel, "Medium")
                 TitleLabel.Text = tostring(titleText)
                 TitleLabel.TextSize = 13
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -5794,7 +5883,7 @@ function EmperUI:CreateWindow(options)
                 Badge.Size = UDim2.new(0.38, 0, 0, 24)
                 Badge.BackgroundColor3 = badgeColor
                 Badge.BackgroundTransparency = 0.78
-                Badge.Font = Enum.Font.GothamBold
+                SetFont(Badge, "Bold")
                 Badge.Text = tostring(badgeText)
                 Badge.TextColor3 = badgeColor
                 Badge.TextSize = 10
@@ -5849,7 +5938,7 @@ function EmperUI:CreateWindow(options)
                 TitleLabel.BackgroundTransparency = 1
                 TitleLabel.Position = UDim2.new(0, 14, 0, 0)
                 TitleLabel.Size = UDim2.new(0.48, -14, 1, 0)
-                TitleLabel.Font = Enum.Font.GothamMedium
+                SetFont(TitleLabel, "Medium")
                 TitleLabel.Text = tostring(titleText)
                 TitleLabel.TextSize = 13
                 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -5873,7 +5962,7 @@ function EmperUI:CreateWindow(options)
                 Minus.Parent = Control
                 Minus.Size = UDim2.new(0, 28, 1, 0)
                 Minus.BackgroundTransparency = 1
-                Minus.Font = Enum.Font.GothamBold
+                SetFont(Minus, "Bold")
                 Minus.Text = "−"
                 Minus.TextSize = 15
                 Minus.AutoButtonColor = false
@@ -5885,7 +5974,7 @@ function EmperUI:CreateWindow(options)
                 Plus.Position = UDim2.new(1, 0, 0, 0)
                 Plus.Size = UDim2.new(0, 28, 1, 0)
                 Plus.BackgroundTransparency = 1
-                Plus.Font = Enum.Font.GothamBold
+                SetFont(Plus, "Bold")
                 Plus.Text = "+"
                 Plus.TextSize = 15
                 Plus.AutoButtonColor = false
@@ -5897,7 +5986,7 @@ function EmperUI:CreateWindow(options)
                 Input.Size = UDim2.new(1, -56, 1, 0)
                 Input.BackgroundTransparency = 1
                 Input.ClearTextOnFocus = false
-                Input.Font = Enum.Font.GothamMedium
+                SetFont(Input, "Medium")
                 Input.TextSize = 11
                 Input.Text = tostring(value)
                 WindowObj:ApplyTheme(Input, "TextColor3", "Text")
@@ -6051,7 +6140,7 @@ function EmperUI:CreateWindow(options)
     ProfileName.BackgroundTransparency = 1
     ProfileName.Position = UDim2.new(0, 0, 0, 0)
     ProfileName.Size = UDim2.new(1, 0, 0, 28)
-    ProfileName.Font = Enum.Font.GothamBold
+    SetFont(ProfileName, "Bold")
     ProfileName.TextSize = 24
     WindowObj:ApplyTheme(ProfileName, "TextColor3", "Text")
     ProfileName.Text = "Loading..."
@@ -6062,7 +6151,7 @@ function EmperUI:CreateWindow(options)
     ProfileUsername.BackgroundTransparency = 1
     ProfileUsername.Position = UDim2.new(0, 0, 0, 30)
     ProfileUsername.Size = UDim2.new(1, 0, 0, 18)
-    ProfileUsername.Font = Enum.Font.Gotham
+    SetFont(ProfileUsername, "Default")
     ProfileUsername.TextSize = 13
     ProfileUsername.TextColor3 = Color3.fromRGB(150, 150, 160)
     ProfileUsername.Text = "@..."
@@ -6092,7 +6181,7 @@ function EmperUI:CreateWindow(options)
     ProfileRole.Parent = RoleContainer
     ProfileRole.BackgroundTransparency = 1
     ProfileRole.Size = UDim2.new(0, 85, 1, 0)
-    ProfileRole.Font = Enum.Font.GothamMedium
+    SetFont(ProfileRole, "Medium")
     ProfileRole.TextSize = 12
     ProfileRole.TextColor3 = Color3.fromRGB(255, 215, 0)
     ProfileRole.Text = "Premium User"
@@ -6147,7 +6236,7 @@ function EmperUI:CreateWindow(options)
         ValLabel.BackgroundTransparency = 1
         ValLabel.Position = UDim2.new(0, 26, 0, 7)
         ValLabel.Size = UDim2.new(1, -30, 0, 22)
-        ValLabel.Font = Enum.Font.GothamBold
+        SetFont(ValLabel, "Bold")
         ValLabel.TextSize = 15
         WindowObj:ApplyTheme(ValLabel, "TextColor3", "Text")
         ValLabel.Text = value
@@ -6158,7 +6247,7 @@ function EmperUI:CreateWindow(options)
         KeyLabel.BackgroundTransparency = 1
         KeyLabel.Position = UDim2.new(0, 8, 0, 34)
         KeyLabel.Size = UDim2.new(1, -16, 0, 16)
-        KeyLabel.Font = Enum.Font.Gotham
+        SetFont(KeyLabel, "Default")
         KeyLabel.TextSize = 11
         WindowObj:ApplyTheme(KeyLabel, "TextColor3", "TextMuted")
         KeyLabel.Text = label
@@ -6245,7 +6334,7 @@ function EmperUI:CreateWindow(options)
         TitleLbl.Parent = DialogBox
         TitleLbl.BackgroundTransparency = 1
         TitleLbl.Size = UDim2.new(1, 0, 0, 40)
-        TitleLbl.Font = Enum.Font.GothamBold
+        SetFont(TitleLbl, "Bold")
         TitleLbl.Text = title
         WindowObj:ApplyTheme(TitleLbl, "TextColor3", "Text")
         TitleLbl.TextSize = 16
@@ -6256,7 +6345,7 @@ function EmperUI:CreateWindow(options)
         MsgLbl.BackgroundTransparency = 1
         MsgLbl.Position = UDim2.new(0, 20, 0, 40)
         MsgLbl.Size = UDim2.new(1, -40, 0, 40)
-        MsgLbl.Font = Enum.Font.Gotham
+        SetFont(MsgLbl, "Default")
         MsgLbl.Text = message
         WindowObj:ApplyTheme(MsgLbl, "TextColor3", "TextMuted")
         MsgLbl.TextSize = 15
@@ -6281,7 +6370,7 @@ function EmperUI:CreateWindow(options)
             Btn.Parent = BtnContainer
             WindowObj:ApplyTheme(Btn, "BackgroundColor3", "ElementBg")
             Btn.Size = UDim2.new(0, 80, 1, 0)
-            Btn.Font = Enum.Font.GothamMedium
+            SetFont(Btn, "Medium")
             Btn.Text = opt
             WindowObj:ApplyTheme(Btn, "TextColor3", "Text")
             Btn.TextSize = 13
@@ -6573,6 +6662,23 @@ function EmperUI:CreateWindow(options)
             Flag = "EmperUI_Theme"
         })
 
+        local fontPresetNames = {}
+        for fontName in pairs(EmperUI.FontPresets) do
+            table.insert(fontPresetNames, fontName)
+        end
+        table.sort(fontPresetNames)
+
+        ThemeSection:Dropdown({
+            Title = "Font Preset",
+            Desc = "Change fonts across the entire UI instantly",
+            Values = fontPresetNames,
+            Value = EmperUI:GetFontPreset(),
+            Callback = function(val)
+                EmperUI:SetFontPreset(val)
+            end,
+            Flag = "EmperUI_FontPreset"
+        })
+
         local bgImages = {
             ["None"] = "",
             ["Vaporwave"] = "rbxassetid://14264350106",
@@ -6685,7 +6791,7 @@ function EmperUI:CreateWindow(options)
         WMLabel.BackgroundTransparency = 1
         WMLabel.Position = UDim2.new(0, 8, 0, 0)
         WMLabel.Size = UDim2.new(1, -16, 1, 0)
-        WMLabel.Font = Enum.Font.GothamMedium
+        SetFont(WMLabel, "Mono")
         WMLabel.TextSize = 12
         WindowObj:ApplyTheme(WMLabel, "TextColor3", "Text")
         WMLabel.TextXAlignment = Enum.TextXAlignment.Left
